@@ -46,7 +46,8 @@ CEntityKeyValues::~CEntityKeyValues()
 		}
 		else
 		{
-			delete m_pAllocator;
+			m_pAllocator->~CKV3Arena();
+			MemAlloc_Free( m_pAllocator );
 		}
 	}
 }
@@ -64,7 +65,8 @@ void CEntityKeyValues::ValidateAllocator()
 		else
 		{
 			Assert( m_eAllocatorType != EKV_ALLOCATOR_EXTERNAL );
-			m_pAllocator = new CKV3Arena( true );
+			void *arenaMem = MemAlloc_Alloc( sizeof( CKV3Arena ) );
+			m_pAllocator = new ( arenaMem ) CKV3Arena( true );
 		}
 
 		m_pValues = m_pAllocator->AllocKV();
@@ -88,7 +90,10 @@ void CEntityKeyValues::Release()
 		Log_Msg( LOG_GENERAL, "kv 0x%p Release refcount == %d\n", this, m_nRefCount );
 
 	if ( m_nRefCount <= 0 )
-		delete this;
+	{
+		this->~CEntityKeyValues();
+		MemAlloc_Free( this );
+	}
 }
 
 const KeyValues3* CEntityKeyValues::GetKeyValue( const EntityKeyId_t &id, bool* pIsAttribute ) const
