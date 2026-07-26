@@ -467,6 +467,44 @@ public:
 	explicit CLargeVarBitVec(int numBits) : CVarBitVecT<int, 64>(numBits) {}
 };
 
+class CVariableBitStringBase
+{
+public:
+	bool	IsFixedSize() const			{ return false; }
+	int		GetNumBits() const			{ return m_numBits; }
+	int		GetNumDWords() const		{ return m_numInts; }
+	uint32 *Base()						{ return m_pInt; }
+	const uint32 *Base() const			{ return m_pInt; }
+
+	DLL_CLASS_IMPORT void	Resize( int numBits );
+
+protected:
+	CVariableBitStringBase() : m_numBits( 0 ), m_numInts( 0 ), m_iBitStringStorage( 0 ), m_pInt( NULL ) {}
+	explicit CVariableBitStringBase( int numBits ) : m_numBits( 0 ), m_numInts( 0 ), m_iBitStringStorage( 0 ), m_pInt( NULL ) { Resize( numBits ); }
+	~CVariableBitStringBase()			{ FreeInts(); }
+
+	DLL_CLASS_IMPORT void	ValidateOperand( const CVariableBitStringBase &operand ) const;
+
+	unsigned	GetEndMask() const		{ return ::GetEndMask( GetNumBits() ); }
+
+private:
+	DLL_CLASS_IMPORT void	AllocInts( int numInts );
+	DLL_CLASS_IMPORT void	ReallocInts( int numInts );
+	DLL_CLASS_IMPORT void	FreeInts();
+
+	int			m_numBits;
+	int			m_numInts;
+	uint32		m_iBitStringStorage;
+	uint32 *	m_pInt;
+};
+
+class CVariableBitString : public CBitVecT< CVariableBitStringBase >
+{
+public:
+	CVariableBitString() {}
+	explicit CVariableBitString( int numBits ) : CBitVecT< CVariableBitStringBase >( numBits ) {}
+};
+
 //-----------------------------------------------------------------------------
 
 template < int NUM_BITS >
@@ -752,8 +790,8 @@ inline uint32 CBitVecT<BASE_OPS>::Get( uint32 offset, uint32 mask )
 template <class BASE_OPS>
 inline void CBitVecT<BASE_OPS>::And(const CBitVecT &addStr, CBitVecT *out) const
 {
-	ValidateOperand( addStr );
-	ValidateOperand( *out );
+	this->ValidateOperand( addStr );
+	this->ValidateOperand( *out );
 	
 	uint32 *	   pDest		= out->Base();
 	const uint32 *pOperand1	= this->Base();
@@ -773,8 +811,8 @@ inline void CBitVecT<BASE_OPS>::And(const CBitVecT &addStr, CBitVecT *out) const
 template <class BASE_OPS>
 inline void CBitVecT<BASE_OPS>::Or(const CBitVecT &orStr, CBitVecT *out) const
 {
-	ValidateOperand( orStr );
-	ValidateOperand( *out );
+	this->ValidateOperand( orStr );
+	this->ValidateOperand( *out );
 
 	uint32 *	   pDest		= out->Base();
 	const uint32 *pOperand1	= this->Base();
