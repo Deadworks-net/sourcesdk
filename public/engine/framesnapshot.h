@@ -1,6 +1,6 @@
 //========= Copyright (c) 1996-2005, Valve Corporation, All rights reserved. ============//
 //
-// Purpose: 
+// Purpose:
 //
 // $NoKeywords: $
 //=============================================================================//
@@ -12,6 +12,9 @@
 
 #include "tier0/platform.h"
 #include "tier1/refcount.h"
+#include "tier1/utllinkedlist.h"
+
+#include "const.h"
 
 #include <mempool.h>
 
@@ -21,17 +24,11 @@ class HLTVEntityData;
 class ReplayEntityData;
 class ServerClass;
 class CEventInfo;
-
-class CVariableBitStringBase {
-public:
-	int		m_numBits;
-	int		m_numInts;
-	int		*m_pInt;
-}; // sizeof 16
+class CJob;
 
 class CFrameSnapshotEntry {
 public:
-	CFrameSnapshot* m_pClass;
+	PackedEntity* m_pPackedData;
 	int m_nSerialNumber;
 };
 static_assert(sizeof(CFrameSnapshotEntry) == 16);
@@ -39,18 +36,17 @@ static_assert(sizeof(CFrameSnapshotEntry) == 16);
 //-----------------------------------------------------------------------------
 // Purpose: snapshot manager class
 //-----------------------------------------------------------------------------
-class CFrameSnapshotManager : public CRefCountServiceMT 
+class CFrameSnapshotManager : public CRefCounted<CRefCountServiceMT>
 {
 	friend class CFrameSnapshot;
 public:
 	virtual ~CFrameSnapshotManager() = default;
 
 	CAtomicMutex m_FrameSnapshotsWriteMutex;
-	CUtlLeanVector<CFrameSnapshot*> m_FrameSnapshots;
-	CVariableBitStringBase m_unkBitString;
-	CUtlMemoryPoolBase m_FrameSnapshotPool;
+	CUtlLinkedList<CFrameSnapshot*> m_FrameSnapshots;
+	CUtlMemoryPoolBase m_PackedEntitiesPool;
 	CFrameSnapshotEntry m_EntitySnapshots[MAX_EDICTS];
-	void* m_pPendingAsyncJob;
+	CJob* m_pPendingAsyncJob;
 }; // sizeof 262320
 
 #endif // FRAMESNAPSHOT_H
