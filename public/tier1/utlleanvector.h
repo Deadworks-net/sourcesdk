@@ -129,6 +129,7 @@ void CUtlLeanVectorBase<T, I, A>::EnsureCapacity( int num, bool force )
 	{
 		pNew = MemoryAllocator_t::template Alloc< T >( nNewAllocated, nNewAllocated );
 		V_memmove( pNew, Base(), m_nCount * sizeof( T ) );
+		m_bExternal = false;
 	}
 	else
 	{
@@ -199,10 +200,12 @@ void CUtlLeanVectorBase<T, I, A>::Swap( CUtlLeanVectorBase< T, I, A >& mem )
 template< class T, typename I, class A >
 void CUtlLeanVectorBase<T, I, A>::RemoveAll()
 {
-	T* pElement = Base();
-	const T* pEnd = &pElement[ m_nCount ];
-	while ( pElement != pEnd )
-		Destruct( pElement++ );
+	if ( T* pElement = Base() )
+	{
+		const T* pEnd = &pElement[ m_nCount ];
+		while ( pElement != pEnd )
+			Destruct( pElement++ );
+	}
 
 	m_nCount = 0;
 }
@@ -368,10 +371,12 @@ void CUtlLeanVectorFixedGrowableBase<T, N, I, A>::EnsureCapacity( int num, bool 
 template< class T, size_t N, typename I, class A >
 void CUtlLeanVectorFixedGrowableBase<T, N, I, A>::RemoveAll()
 {
-	T* pElement = Base();
-	const T* pEnd = &pElement[ m_nCount ];
-	while ( pElement != pEnd )
-		Destruct( pElement++ );
+	if ( T* pElement = Base() )
+	{
+		const T* pEnd = &pElement[ m_nCount ];
+		while ( pElement != pEnd )
+			Destruct( pElement++ );
+	}
 
 	m_nCount = 0;
 }
@@ -877,10 +882,13 @@ void CUtlLeanVectorImpl<B, T, I>::RemoveMultipleFromTail( int num )
 template< class B, class T, typename I >
 void CUtlLeanVectorImpl<B, T, I>::RemoveAll()
 {
-	for ( int i = this->m_nCount; i-- > 0; )
+	if ( this->Base() )
 	{
-		// Global scope to resolve conflict with Scaleform 4.0
-		::Destruct(&Element(i));
+		for ( int i = this->m_nCount; i-- > 0; )
+		{
+			// Global scope to resolve conflict with Scaleform 4.0
+			::Destruct(&Element(i));
+		}
 	}
 
 	this->m_nCount = 0;
