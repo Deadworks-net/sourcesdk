@@ -101,9 +101,32 @@ public:
 	I		First() const;
 	I		Next( I i ) const;
 
-	// Nested typedefs, for code that might need 
+	// Nested typedefs, for code that might need
 	// to fish out the index type from a given dict
 	typedef I IndexType_t;
+
+	template < typename D >
+	class iterator
+	{
+	public:
+		iterator( D *p, I i ) : m_p( p ), m_i( i ) {}
+
+		auto &operator*() const							{ return m_p->Element( m_i ); }
+		iterator &operator++()							{ m_i = m_p->Next( m_i ); return *this; }
+		bool operator!=( const iterator &rhs ) const	{ return m_i != rhs.m_i; }
+
+		char const *Name() const						{ return m_p->GetElementName( m_i ); }
+		I Index() const									{ return m_i; }
+
+	private:
+		D *m_p;
+		I m_i;
+	};
+
+	iterator< CUtlDict > begin()						{ return { this, First() }; }
+	iterator< CUtlDict > end()							{ return { this, InvalidIndex() }; }
+	iterator< const CUtlDict > begin() const			{ return { this, First() }; }
+	iterator< const CUtlDict > end() const				{ return { this, InvalidIndex() }; }
 
 protected:
 	typedef CUtlMap<const char *, T, I, typename CDictCompareTypeDeducer<COMPARE_TYPE>::Type_t> DictElementMap_t;

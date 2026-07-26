@@ -247,6 +247,29 @@ public:
 	IndexType_t PrevInorder( IndexType_t i ) const { return m_Tree.PrevInorder( i ); }
 	IndexType_t LastInorder() const { return m_Tree.LastInorder(); }
 
+	template < typename M >
+	class iterator
+	{
+	public:
+		iterator( M *p, IndexType_t i ) : m_p( p ), m_i( i ) {}
+
+		auto &operator*() const							{ return m_p->Element( m_i ); }
+		iterator &operator++()							{ m_i = m_p->NextInorder( m_i ); return *this; }
+		bool operator!=( const iterator &rhs ) const	{ return m_i != rhs.m_i; }
+
+		auto &Key() const								{ return m_p->Key( m_i ); }
+		IndexType_t Index() const						{ return m_i; }
+
+	private:
+		M *m_p;
+		IndexType_t m_i;
+	};
+
+	iterator< CUtlOrderedMapBase > begin()				{ return { this, FirstInorder() }; }
+	iterator< CUtlOrderedMapBase > end()				{ return { this, InvalidIndex() }; }
+	iterator< const CUtlOrderedMapBase > begin() const	{ return { this, FirstInorder() }; }
+	iterator< const CUtlOrderedMapBase > end() const	{ return { this, InvalidIndex() }; }
+
 	// API Matching src2 for Panorama
 	IndexType_t NextInorderSameKey( IndexType_t i ) const
 	{
