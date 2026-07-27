@@ -1,4 +1,4 @@
-//====== Copyright ©, Valve Corporation, All rights reserved. =======
+//====== Copyright ï¿½, Valve Corporation, All rights reserved. =======
 //
 // Purpose: Maps message types to strings and vice versa
 //
@@ -15,6 +15,7 @@
 #include <tier0/valve_minmax_off.h>
 #include "google/protobuf/descriptor.h"
 #include <tier0/valve_minmax_on.h>
+#include "tier1/utlvector.h"
 #include "gcsdk/jobtime.h"
 
 namespace GCSDK

@@ -127,7 +127,7 @@ public:
 	CGCSharedObjectCache( const CSteamID & steamIDOwner = CSteamID() );
 	virtual ~CGCSharedObjectCache();
 
-	const CSteamID & GetOwner() const { return m_context.GetOwner(); }
+	virtual SOID_t GetOwner() const OVERRIDE { return m_context.GetOwner(); }
 	const CUtlVector< CSharedObjectContext::Subscriber_t > & GetSubscribers() const { return m_context.GetSubscribers(); }
 
 	CGCSharedObjectTypeCache *FindTypeCache( int nClassID ) const { return (CGCSharedObjectTypeCache *)FindBaseTypeCache( nClassID ); }
@@ -312,7 +312,7 @@ bool CGCSharedObjectCache::BYieldingLoadSchSingleton( IGCSQLResultSet *pResultSe
 		pSchObj->Obj() = objDefaults.Obj();
 		if( !pSchObj->BYieldingAddToDatabase() )
 		{
-			EmitError( SPEW_SHAREDOBJ, "Unable to add singleton type %d for %s\n", pSchObj->GetTypeID(), GetOwner().Render() );
+			EmitError( SPEW_SHAREDOBJ, "Unable to add singleton type %d for %s\n", pSchObj->GetTypeID(), GetOwner().GetRender().String() );
 			return false;
 		}
 		AddObjectClean( pSchObj );

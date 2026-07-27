@@ -11,8 +11,11 @@
 #endif
 
 #include "steam/steam_api.h"
+#include "tier1/utlleanvector.h"
+#include "tier1/utlmap.h"
 #include "jobmgr.h"
 #include "sharedobject.h"
+#include "gcclient_sharedobjectcache.h"
 
 class ISteamGameCoordinator;
 struct GCMessageAvailable_t;
@@ -43,37 +46,39 @@ public:
 	bool BSendMessage( const CProtoBufMsgBase& msg );
 
 	/// Locate a given shared object from the cache
-	CSharedObject *FindSharedObject( const CSteamID & ownerID, const CSharedObject & soIndex );
+	CSharedObject *FindSharedObject( const SOID_t &owner, const CSharedObject & soIndex );
 
-	/// Find a shared object cache for the specified user.  Optionally, the cache will be
+	/// Find a shared object cache for the specified owner.  Optionally, the cache will be
 	/// created if it doesn't not currently exist.
-	CGCClientSharedObjectCache *FindSOCache( const CSteamID & steamID, bool bCreateIfMissing = true );
+	CGCClientSharedObjectCache *FindSOCache( const SOID_t &owner, bool bCreateIfMissing = true );
 
-	/// Adds a listener to the shared object cache for the specified Steam ID.
-	///
-	/// @see CGCClientSharedObjectCache::AddListener
-	void AddSOCacheListener( const CSteamID &ownerID, ISharedObjectListener *pListener );
+	/// Adds a listener. Listeners are global to the client, not bound to a single cache,
+	/// so the listener is notified for every cache and must match the owner SOID itself.
+	/// Adding a listener that is already registered is harmlessly ignored.
+	bool AddListener( ISharedObjectListener *pListener );
 
-	/// Removes a listener for the shared object cache for the specified Steam ID.
-	/// Returns true if we were listening and were successfully removed, false
-	/// otherwise
-	///
-	/// @see CGCClientSharedObjectCache::RemoveListener
-	bool RemoveSOCacheListener( const CSteamID &ownerID, ISharedObjectListener *pListener );
+	/// Removes a listener. The listener immediately receives SOCacheUnsubscribed for every
+	/// cache it is currently subscribed to. Returns true if it was registered and removed.
+	bool RemoveListener( ISharedObjectListener *pListener );
+
+	/// Handles a k_ESOMsg_CacheSubscribed body: finds or creates the cache for the owner
+	/// named in the message, parses every object in it, then notifies the listeners.
+	void HandleSOCacheSubscribedMsg( const CMsgSOCacheSubscribed &msg );
+
+	void NotifySOCreated( const SOID_t &owner, const CSharedObject *pObject, ESOCacheEvent eEvent );
+	void NotifySOUpdated( const SOID_t &owner, const CSharedObject *pObject, ESOCacheEvent eEvent );
+	void NotifySODestroyed( const SOID_t &owner, const CSharedObject *pObject, ESOCacheEvent eEvent );
+	void NotifySOCacheSubscribed( const SOID_t &owner, CGCClientSharedObjectCache *pCache, ESOCacheEvent eEvent );
+	void NotifySOCacheUnsubscribed( const SOID_t &owner, CGCClientSharedObjectCache *pCache, ESOCacheEvent eEvent );
 
 	void OnGCMessageAvailable( GCMessageAvailable_t *pCallback );
 	ISteamGameCoordinator *GetSteamGameCoordinator() { return m_pSteamGameCoordinator; }
 
 	virtual void Test_AddEvent( CTestEvent *pEvent )	{}
-	virtual void Test_CacheSubscribed( const CSteamID & steamID ) {}
-
-	void NotifySOCacheUnsubscribed( const CSteamID & ownerID );
+	virtual void Test_CacheSubscribed( const SOID_t &owner ) {}
 
 	void Dump();
 
-#ifdef DBGFLAG_VALIDATE
-	static void ValidateStatics( CValidator &validator );
-#endif
 protected:
 
 	ISteamGameCoordinator *m_pSteamGameCoordinator;
@@ -83,10 +88,13 @@ protected:
 	CJobMgr m_JobMgr;
 
 	// Shared object caches
-	CUtlMap<CSteamID, CGCClientSharedObjectCache *> m_mapSOCache;
+	CUtlOrderedMap< SOID_t, CGCClientSharedObjectCache *, CDefLess< SOID_t >, unsigned short > m_mapSOCache;
+
+	// Listeners are global to the client rather than per-cache
+	CUtlLeanVector< ISharedObjectListener * > m_vecListeners;
 
 	// Steam callback for getting notified about messages available. Not part of the class
-	// in Steam builds because we use the TestClientManager instead of steam_api.dll in Steam 
+	// in Steam builds because we use the TestClientManager instead of steam_api.dll in Steam
 #ifndef STEAM
 	CCallback< CGCClient, GCMessageAvailable_t, false > m_callbackGCMessageAvailable;
 #endif

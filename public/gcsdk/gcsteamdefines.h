@@ -12,6 +12,7 @@
 #endif
 
 #include "tier0/memalloc.h"
+#include "tier0/threadtools.h"
 
 // steam defines some things that games don't
 #ifndef STEAM
@@ -41,6 +42,14 @@ public:
 
 //inline void *MemAlloc_AllocAligned( size_t size, size_t align, bool bCanFail ) { return MemAlloc_AllocAligned( size, align ); }
 inline void MemAlloc_FreeAligned( void *pMemBlock, bool bOperatorNew ) { MemAlloc_FreeAligned( pMemBlock ); }
+
+typedef uint64 JobID_t;			// Each Job has a unique ID
+typedef uint64 GID_t;			// Global ID
+
+const GID_t k_GIDNil = 0xfffffffffffffffful;
+
+// the plain mutex the GC sources ask for is spelled differently here
+typedef CAtomicMutex CThreadMutex;
 
 #endif
 

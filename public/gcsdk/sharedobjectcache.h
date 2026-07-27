@@ -10,6 +10,10 @@
 #pragma once
 #endif
 
+#include "tier1/utlcommon.h"
+#include "tier1/utlhashmaplarge.h"
+
+#include "soid.h"
 #include "sharedobject.h"
 
 namespace GCSDK
@@ -33,11 +37,11 @@ public:
 	virtual bool AddObject( CSharedObject *pObject );
 	virtual bool AddObjectClean( CSharedObject *pObject );
 	virtual CSharedObject *RemoveObject( const CSharedObject & soIndex );
+	virtual void RemoveAllObjectsWithoutDeleting();
+	virtual void EnsureCapacity( uint32 nItems );
+
 	CSharedObject *RemoveObjectByIndex( uint32 nObj );
 	void DestroyAllObjects();
-	void RemoveAllObjectsWithoutDeleting();
-
-	virtual void EnsureCapacity( uint32 nItems );
 
 	CSharedObject *FindSharedObject( const CSharedObject & soIndex );
 
@@ -47,11 +51,19 @@ public:
 	virtual void Validate( CValidator &validator, const char *pchName );
 #endif
 
+public:
+	struct SharedObjectAndIndex_t
+	{
+		CUtlVector< int > m_vecIndices;
+		CUtlVector< CSharedObject * > m_vecObjects;
+	};
+
 private:
 	int FindSharedObjectIndex( const CSharedObject & soIndex ) const;
 	void AddObjectInternal( CSharedObject *pObject );
 
 	CSharedObjectVec m_vecObjects;
+	CUtlHashMap< int, SharedObjectAndIndex_t, CDefEquals< int >, DefaultHashFunctor< int >, int > m_mapObjects;
 	int m_nTypeID;
 };
 
@@ -68,12 +80,14 @@ public:
 	CSharedObjectCache();
 	virtual ~CSharedObjectCache();
 
-	virtual const CSteamID & GetOwner() const = 0;
+	virtual SOID_t GetOwner() const = 0;
 
-	bool AddObject( CSharedObject *pSharedObject );
+	virtual bool AddObject( CSharedObject *pSharedObject );
+	virtual bool AddObjectClean( CSharedObject *pSharedObject );
+	virtual CSharedObject *RemoveObject( const CSharedObject & soIndex );
+	virtual bool RemoveAllObjectsWithoutDeleting();
+
 	bool BDestroyObject( const CSharedObject & soIndex, bool bRemoveFromDatabase );
-	CSharedObject *RemoveObject( const CSharedObject & soIndex );
-	void RemoveAllObjectsWithoutDeleting();
 
 	//called to find the type cache for the specified class ID. This will return NULL if one does not exist
 	CSharedObjectTypeCache *FindBaseTypeCache( int nClassID ) const;
@@ -116,16 +130,16 @@ public:
 
 protected:
 	virtual CSharedObjectTypeCache *AllocateTypeCache( int nClassID ) const = 0;
-	CSharedObjectTypeCache *GetTypeCacheByIndex( int nIndex ) { return m_mapObjects.IsValidIndex( nIndex ) ? m_mapObjects.Element( nIndex ) : NULL; }
-	int GetTypeCacheCount() const { return m_mapObjects.MaxElement(); }
+	CSharedObjectTypeCache *GetTypeCacheByIndex( int nIndex ) { return ( nIndex >= 0 && nIndex < m_vecTypeCaches.Count() ) ? m_vecTypeCaches[ nIndex ] : NULL; }
+	int GetTypeCacheCount() const { return m_vecTypeCaches.Count(); }
 
-	int FirstTypeCacheIndex() { return m_mapObjects.FirstInorder(); }
-	int NextTypeCacheIndex( int iCurrent ) { return m_mapObjects.NextInorder( iCurrent ); }
-	int InvalidTypeCacheIndex() { return m_mapObjects.InvalidIndex(); }
+	int FirstTypeCacheIndex() { return 0; }
+	int NextTypeCacheIndex( int iCurrent ) { return iCurrent + 1; }
+	int InvalidTypeCacheIndex() { return m_vecTypeCaches.Count(); }
 
 	uint64 m_ulVersion;
 private:
-	CUtlMap<int, CSharedObjectTypeCache *> m_mapObjects;
+	CUtlVector< CSharedObjectTypeCache * > m_vecTypeCaches;
 };
 
 

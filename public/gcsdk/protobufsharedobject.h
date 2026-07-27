@@ -37,23 +37,23 @@ class CProtoBufSharedObjectBase : public CSharedObject
 public:
 	typedef CSharedObject BaseClass;
 
-	virtual bool BParseFromMessage( const CUtlBuffer & buffer ) OVERRIDE;
-	virtual bool BParseFromMessage( const std::string &buffer ) OVERRIDE;
+	virtual bool BParseFromMessage( SOID_t ID, const CUtlBuffer & buffer ) OVERRIDE;
 	virtual bool BUpdateFromNetwork( const CSharedObject & objUpdate ) OVERRIDE;
 
 	virtual bool BIsKeyLess( const CSharedObject & soRHS ) const ;
 	virtual void Copy( const CSharedObject & soRHS );
 	virtual void Dump() const OVERRIDE;
+	virtual int Unk_FindIndexInVector( const CUtlVector< CSharedObject * > &vecObjects, const CUtlVector< int > &vecIndices ) const OVERRIDE;
+	virtual bool BAddToMessage( std::string *pBuffer, bool bUnk ) const OVERRIDE;
+	virtual bool BAddDestroyToMessage( std::string *pBuffer ) const OVERRIDE;
 
+#ifdef GC
 #ifdef DBGFLAG_VALIDATE
 	virtual void Validate( CValidator &validator, const char *pchName );
 #endif
 
-#ifdef GC
 	virtual bool BAddToMessage( CUtlBuffer & bufOutput ) const OVERRIDE;
-	virtual bool BAddToMessage( std::string *pBuffer ) const OVERRIDE;
 	virtual bool BAddDestroyToMessage( CUtlBuffer & bufDestroy ) const OVERRIDE;
-	virtual bool BAddDestroyToMessage( std::string *pBuffer ) const OVERRIDE;
 
 	virtual bool BParseFromMemcached( CUtlBuffer & buffer ) OVERRIDE;
 	virtual bool BAddToMemcached( CUtlBuffer & bufOutput ) const OVERRIDE;

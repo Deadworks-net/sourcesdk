@@ -1,4 +1,4 @@
-//====== Copyright ©, Valve Corporation, All rights reserved. =======
+//====== Copyright ï¿½, Valve Corporation, All rights reserved. =======
 //
 // Purpose: Holds the CMsgBase_t class
 //
@@ -10,7 +10,7 @@
 #pragma once
 #endif
 
-#include "tier1/tsmultimempool.h"
+#include "gcsteamdefines.h"
 #include "gclogger.h"
 #include "gcconstants.h"
 #include "refcount.h"
@@ -25,7 +25,6 @@ typedef uint32 MsgType_t;
 const uint32 k_EMsgProtoBufFlag = 0x80000000;
 
 //extern ConVar g_ConVarMsgErrorDump;
-extern CThreadSafeMultiMemoryPool g_MemPoolMsg;
 
 enum EMsgFormatType
 {
@@ -249,7 +248,7 @@ CMsgBase_t<MSG_HEADER_TYPE>::CMsgBase_t( uint32 cubStruct, uint32 cubReserve )
 
 	// Alloc a buffer
 	m_cubPkt = m_cubMsgHdr + m_cubStruct;	
-	m_pubPkt = (uint8 *) g_MemPoolMsg.Alloc( m_cubPkt + cubReserve );
+	m_pubPkt = (uint8 *) PvAlloc( m_cubPkt + cubReserve );
 	m_pubBody = m_pubPkt + m_cubMsgHdr;
 	memset(m_pubPkt, 0, m_cubPkt );
 	m_bAlloced = true;
@@ -265,7 +264,7 @@ CMsgBase_t<MSG_HEADER_TYPE>::CMsgBase_t( const uint8 *pubPkt, uint32 cubPkt )
 
 	// Alloc a buffer
 	m_cubPkt = cubPkt;	
-	m_pubPkt = (uint8 *) g_MemPoolMsg.Alloc( m_cubPkt ); 
+	m_pubPkt = (uint8 *) PvAlloc( m_cubPkt );
 	m_pubBody = m_pubPkt + m_cubMsgHdr;
 	Q_memcpy(m_pubPkt, pubPkt, cubPkt );
 	m_bAlloced = true;
@@ -293,7 +292,7 @@ CMsgBase_t<MSG_HEADER_TYPE>::~CMsgBase_t()
 {
 	// if we allocated memory, free it
 	if ( m_bAlloced && m_pubPkt )
-		g_MemPoolMsg.Free( m_pubPkt );
+		FreePv( m_pubPkt );
 }
 
 
@@ -320,7 +319,7 @@ void CMsgBase_t<MSG_HEADER_TYPE>::SetPacket( IMsgNetPacket *pNetPacket )
 template <typename MSG_HEADER_TYPE>
 void CMsgBase_t<MSG_HEADER_TYPE>::EnsurePacketSize( uint32 cubExtraSize )
 {
-	m_pubPkt = (uint8 *) g_MemPoolMsg.ReAlloc( m_pubPkt, m_cubPkt + cubExtraSize );
+	m_pubPkt = (uint8 *) PvRealloc( m_pubPkt, m_cubPkt + cubExtraSize );
 	m_pubBody = m_pubPkt + m_cubMsgHdr;
 }
 

@@ -13,7 +13,6 @@
 
 #include "steam/steamtypes.h"
 #include "tier0/t0constants.h"
-#include "gamecoordinator/igcsqlquery.h"
 
 namespace GCSDK
 {
@@ -125,8 +124,6 @@ enum EForeignKeyAction
 };
 const char *PchNameFromEForeignKeyAction( EForeignKeyAction eForeignKeyAction );
 EForeignKeyAction EForeignKeyActionFromName( const char *pchName );
-
-const char *PchNameFromEGCSQLType( EGCSQLType eForeignKeyAction );
 
 #ifndef SQLRETURN
 typedef short SQLRETURN;
