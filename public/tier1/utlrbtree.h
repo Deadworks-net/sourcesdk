@@ -153,12 +153,6 @@ template <> inline bool CLessFunc<char *>::LessFunc( char * const &lhs, char * c
 
 //-------------------------------------
 
-template <typename RBTREE_T>
-void SetDefLessFunc( RBTREE_T &RBTree )
-{
-	RBTree.SetLessFunc( DefLessFunc( typename RBTREE_T::KeyType_t ) );
-}
-
 // For use with FindClosest
 // Move these to a common area if anyone else ever uses them
 enum CompareOperands_t
@@ -206,7 +200,7 @@ public:
 	// constructor, destructor
 	// Left at growSize = 0, the memory will first allocate 1 element and double in size
 	// at each increment.
-	// LessFunc_t is required, but may be set after the constructor using SetLessFunc() below
+	// LessFunc_t stateless: it is invoked as a temporary and is not stored in the tree
 	explicit CUtlRBTree( int growSize = 0, int initSize = 0, LessFunc_t lessfunc = LessFunc_t{} );
 	explicit CUtlRBTree( LessFunc_t lessfunc );
 	CUtlRBTree( const CUtlRBTree<T, L, I, M> &copyFrom );
@@ -263,9 +257,6 @@ public:
 	// returns the tree depth (not a very fast operation)
 	int Depth( I node ) const;
 	int Depth() const;
-
-	// Sets the less func
-	void SetLessFunc( const LessFunc_t &func );
 
 	// Allocation method
 	I NewNode( bool bConstructElement );
@@ -358,12 +349,11 @@ protected:
 	// Inserts a node into the tree, doesn't copy the data in.
 	void FindInsertionPosition( T const &insert, I &parent, bool &leftchild );
 
+	static bool Less( T const &lhs, T const &rhs ) { return LessFunc_t()( lhs, rhs ); }
+
 	// Remove and add back an element in the tree.
 	void	Unlink( I elem );
 	void	Link( I elem );
-
-	// Used for sorting.
-	LessFunc_t m_LessFunc;
 
 	M m_Elements;
 	I m_Root;
@@ -443,7 +433,6 @@ protected:
 
 template < class T, typename L, class I, class M >
 inline CUtlRBTree<T, L, I, M>::CUtlRBTree( int growSize, int initSize, LessFunc_t lessfunc ) : 
-m_LessFunc( lessfunc ),
 m_Elements( growSize, initSize ),
 m_Root( InvalidIndex() ),
 m_NumElements( 0 ),
@@ -455,7 +444,6 @@ m_LastAlloc( m_Elements.InvalidIterator() )
 
 template < class T, typename L, class I, class M >
 inline CUtlRBTree<T, L, I, M>::CUtlRBTree( LessFunc_t lessfunc ) : 
-m_LessFunc( lessfunc ),
 m_Elements( ),
 m_Root( InvalidIndex() ),
 m_NumElements( 0 ),
@@ -467,16 +455,14 @@ m_LastAlloc( m_Elements.InvalidIterator() )
 
 template < class T, typename L, class I, class M >
 inline CUtlRBTree<T, L, I, M>::CUtlRBTree( const CUtlRBTree<T, L, I, M> &copyFrom )
- :  m_LessFunc( copyFrom.m_LessFunc ), 
-    m_LastAlloc( copyFrom.m_Elements.InvalidIterator() )
+ :  m_LastAlloc( copyFrom.m_Elements.InvalidIterator() )
 {
 	CopyFrom( copyFrom );
 }
 
 template < class T, typename L, class I, class M >
 inline CUtlRBTree<T, L, I, M>::CUtlRBTree( CUtlRBTree<T, L, I, M> &&moveFrom )
- :  m_LessFunc( moveFrom.m_LessFunc ),
-	m_Root( InvalidIndex() ),
+ :  m_Root( InvalidIndex() ),
 	m_NumElements( 0 ),
 	m_FirstFree( InvalidIndex() ),
 	m_LastAlloc( m_Elements.InvalidIterator() )
@@ -514,7 +500,6 @@ inline CUtlRBTree<T, L, I, M> &CUtlRBTree<T, L, I, M>::CopyFrom( const CUtlRBTre
 
 	m_Elements.CopyFrom( other.m_Elements );
 
-	m_LessFunc = other.m_LessFunc;
 	m_Root = other.m_Root;
 	m_NumElements = other.m_NumElements;
 	m_FirstFree = other.m_FirstFree;
@@ -1567,17 +1552,6 @@ bool CUtlRBTree<T, L, I, M>::IsValid() const
 
 
 //-----------------------------------------------------------------------------
-// Sets the less func
-//-----------------------------------------------------------------------------
-
-template < class T, typename L, class I, class M >  
-void CUtlRBTree<T, L, I, M>::SetLessFunc( const typename CUtlRBTree<T, L, I, M>::LessFunc_t &func )
-{
-	m_LessFunc = func;
-}
-
-
-//-----------------------------------------------------------------------------
 // inserts a node into the tree
 //-----------------------------------------------------------------------------
 
@@ -1585,8 +1559,6 @@ void CUtlRBTree<T, L, I, M>::SetLessFunc( const typename CUtlRBTree<T, L, I, M>:
 template < class T, typename L, class I, class M > 
 void CUtlRBTree<T, L, I, M>::FindInsertionPosition( T const &insert, I &parent, bool &leftchild )
 {
-	Assert( !!m_LessFunc );
-
 	/* find where node belongs */
 	I current = m_Root;
 	parent = InvalidIndex();
@@ -1594,7 +1566,7 @@ void CUtlRBTree<T, L, I, M>::FindInsertionPosition( T const &insert, I &parent, 
 	while (current != InvalidIndex()) 
 	{
 		parent = current;
-		if (m_LessFunc( insert, Element(current) ))
+		if (Less( insert, Element(current) ))
 		{
 			leftchild = true; current = LeftChild(current);
 		}
@@ -1652,11 +1624,11 @@ I CUtlRBTree<T, L, I, M>::InsertIfNotFound( T const &insert )
 	while (current != InvalidIndex()) 
 	{
 		parent = current;
-		if (m_LessFunc( insert, Element(current) ))
+		if (Less( insert, Element(current) ))
 		{
 			leftchild = true; current = LeftChild(current);
 		}
-		else if (m_LessFunc( Element(current), insert ))
+		else if (Less( Element(current), insert ))
 		{
 			leftchild = false; current = RightChild(current);
 		}
@@ -1684,11 +1656,11 @@ I CUtlRBTree<T, L, I, M>::InsertIfNotFound( T &&moveInsert )
 	{
 		parent = current;
 		// Move unreferences:
-		if (m_LessFunc( moveInsert, Element(current) ))
+		if (Less( moveInsert, Element(current) ))
 		{
 			leftchild = true; current = LeftChild(current);
 		}
-		else if (m_LessFunc( Element(current), moveInsert ))
+		else if (Less( Element(current), moveInsert ))
 		{
 			leftchild = false; current = RightChild(current);
 		}
@@ -1711,14 +1683,12 @@ I CUtlRBTree<T, L, I, M>::InsertIfNotFound( T &&moveInsert )
 template < class T, typename L, class I, class M > 
 I CUtlRBTree<T, L, I, M>::Find( T const &search ) const
 {
-	Assert( !!m_LessFunc );
-
 	I current = m_Root;
 	while (current != InvalidIndex()) 
 	{
-		if (m_LessFunc( search, Element(current) ))
+		if (Less( search, Element(current) ))
 			current = LeftChild(current);
-		else if (m_LessFunc( Element(current), search ))
+		else if (Less( Element(current), search ))
 			current = RightChild(current);
 		else 
 			break;
@@ -1733,15 +1703,13 @@ I CUtlRBTree<T, L, I, M>::Find( T const &search ) const
 template < class T, typename L, class I, class M >
 I CUtlRBTree<T, L, I, M>::FindFirst( T const &search ) const
 {
-	Assert( !!m_LessFunc );
-
 	I current = m_Root;
 	I best = InvalidIndex();
 	while ( current != InvalidIndex() )
 	{
-		if ( m_LessFunc( search, Element( current ) ) )
+		if ( Less( search, Element( current ) ) )
 			current = LeftChild( current );
-		else if ( m_LessFunc( Element( current ), search ) )
+		else if ( Less( Element( current ), search ) )
 			current = RightChild( current );
 		else
 		{
@@ -1759,7 +1727,6 @@ I CUtlRBTree<T, L, I, M>::FindFirst( T const &search ) const
 template < class T, typename L, class I, class M >
 I CUtlRBTree<T, L, I, M>::FindClosest( T const &search, CompareOperands_t eFindCriteria ) const
 {
-	Assert( !!m_LessFunc );
 	Assert( ( eFindCriteria & ( k_EGreaterThan | k_ELessThan ) ) ^ ( k_EGreaterThan | k_ELessThan ) );
 
 	I current = m_Root;
@@ -1767,14 +1734,14 @@ I CUtlRBTree<T, L, I, M>::FindClosest( T const &search, CompareOperands_t eFindC
 
 	while ( current != InvalidIndex() )
 	{
-		if ( m_LessFunc( search, Element( current ) ) )
+		if ( Less( search, Element( current ) ) )
 		{
 			// current node is > key
 			if ( eFindCriteria & k_EGreaterThan )
 				best = current;
 			current = LeftChild( current );
 		}
-		else if ( m_LessFunc( Element( current ), search ) )
+		else if ( Less( Element( current ), search ) )
 		{
 			// current node is < key
 			if ( eFindCriteria & k_ELessThan )
@@ -1810,7 +1777,6 @@ template < class T, typename L, class I, class M >
 void CUtlRBTree<T, L, I, M>::Swap( CUtlRBTree< T, L, I, M > &that )
 {
 	m_Elements.Swap( that.m_Elements );
-	V_swap( m_LessFunc, that.m_LessFunc );
 	V_swap( m_Root, that.m_Root );
 	V_swap( m_NumElements, that.m_NumElements );
 	V_swap( m_FirstFree, that.m_FirstFree );

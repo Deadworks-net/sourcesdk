@@ -93,20 +93,19 @@ public:
 	class CKeyLess
 	{
 	public:
-		CKeyLess( const LessFunc_t &lessFunc = LessFunc_t{} ) : m_LessFunc( lessFunc ) {}
-		CKeyLess( LessFunc_t &&lessFunc ) : m_LessFunc( Move( lessFunc ) ) {}
+		CKeyLess() {}
+		CKeyLess( const LessFunc_t & ) {}
+		CKeyLess( LessFunc_t && ) {}
 
 		bool operator!() const
 		{
-			return !m_LessFunc;
+			return false;
 		}
 
 		bool operator()( const Node_t &left, const Node_t &right ) const
 		{
-			return m_LessFunc( left.key, right.key );
+			return LessFunc_t()( left.key, right.key );
 		}
-
-		LessFunc_t m_LessFunc;
 	};
 
 	typedef CUtlRBTree< Node_t, CKeyLess, I > CTree;
@@ -116,12 +115,12 @@ public:
 	// at each increment.
 	// LessFunc_t is required, but may be set after the constructor using SetLessFunc() below
 	CUtlOrderedMapBase( int growSize, int initSize, const LessFunc_t &lessfunc )
-	 : m_Tree( growSize, initSize, CKeyLess( lessfunc ) )
+	 : m_LessFunc( lessfunc ), m_Tree( growSize, initSize )
 	{
 	}
 
 	CUtlOrderedMapBase( int growSize, int initSize, LessFunc_t &&lessfunc )
-	 : m_Tree( growSize, initSize, CKeyLess( Move( lessfunc ) ) )
+	 : m_LessFunc( Move( lessfunc ) ), m_Tree( growSize, initSize )
 	{
 	}
 
@@ -151,11 +150,13 @@ public:
 	CUtlOrderedMapBase< K, T, L, I > &operator=( CUtlOrderedMapBase< K, T, L, I > &&other ) { return MoveFrom( Move( other ) ); }
 	CUtlOrderedMapBase< K, T, L, I > &CopyFrom( const CUtlOrderedMapBase< K, T, L, I > &other )
 	{
+		m_LessFunc = other.m_LessFunc;
 		m_Tree.CopyFrom( other.m_Tree );
 		return *this;
 	}
 	CUtlOrderedMapBase< K, T, L, I > &MoveFrom( CUtlOrderedMapBase< K, T, L, I > &&other )
 	{
+		m_LessFunc = Move( other.m_LessFunc );
 		m_Tree.MoveFrom( Move( other.m_Tree ) );
 		return *this;
 	}
@@ -186,7 +187,7 @@ public:
 	// Sets the less func
 	void SetLessFunc( LessFunc_t func )
 	{
-		m_Tree.SetLessFunc( CKeyLess( func ) );
+		m_LessFunc = func;
 	}
 
 	// Insert method (inserts in order)
@@ -315,12 +316,14 @@ public:
 
 	void Swap( CUtlOrderedMapBase< K, T, L, I > &that )
 	{
+		V_swap( m_LessFunc, that.m_LessFunc );
 		m_Tree.Swap( that.m_Tree );
 	}
 
 	CTree *AccessTree() { return &m_Tree; }
 
 protected:
+	LessFunc_t m_LessFunc;
 	CTree m_Tree;
 };
 
