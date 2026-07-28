@@ -80,7 +80,7 @@ public:
 
 	bool		IsHeapified();
 protected:
-	CUtlVector<T, I, A>	m_heap;
+	A			m_heap;
 
 	void		Swap( I index1, I index2 );
 	I			PercolateDown( I nIndex );

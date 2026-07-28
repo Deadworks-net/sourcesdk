@@ -42,7 +42,7 @@ public:
 	DLL_CLASS_IMPORT const char * Find( const char *pszValue );
 
 protected:
-	typedef CUtlRBTree<const char *, unsigned short> CStrSet;
+	typedef CUtlRBTree<const char *, CDefStringLess, unsigned short> CStrSet;
 
 	CThreadFastMutex m_Mutex;
 	CStrSet m_Strings;
