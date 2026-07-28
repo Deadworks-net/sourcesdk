@@ -13,7 +13,7 @@ static bool PriorityQueueLess( const int &lhs, const int &rhs )
 REGISTER_NAMED_TEST( "CUtlPriorityQueue.InsertRemove", CUtlPriorityQueue_InsertRemove )
 {
 	// Priority queues should heapify inserts, update priorities and remove the head.
-	using IntPriorityQueue_t = CUtlPriorityQueue< int, int, CDefUtlPriorityQueueLessFunc< int >, CUtlVectorMemory_Growable< int, int, 0 >, CDefUtlPriorityQueueSetIndexFunc< int, int > >;
+	using IntPriorityQueue_t = CUtlPriorityQueue< int, int, CDefUtlPriorityQueueLessFunc< int >, CUtlLeanVector< int >, CDefUtlPriorityQueueSetIndexFunc< int, int > >;
 
 	IntPriorityQueue_t queue( 0, 0, &PriorityQueueLess );
 

@@ -71,8 +71,6 @@ public:
 	CCSGCServerSystem();
 	virtual ~CCSGCServerSystem();
 
-	CSteamID GetSteamID() const { return m_ourSteamID; }
-
 protected:
 	// .. not reversed vars
 };

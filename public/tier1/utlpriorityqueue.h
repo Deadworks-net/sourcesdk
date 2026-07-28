@@ -11,6 +11,7 @@
 #pragma once
 #endif
 
+#include "tier1/utlleanvector.h"
 #include "tier1/utlvector.h"
 
 template < typename T >

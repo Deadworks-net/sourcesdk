@@ -113,7 +113,7 @@ public:
 	// constructor, destructor
 	// Left at growSize = 0, the memory will first allocate 1 element and double in size
 	// at each increment.
-	// LessFunc_t is required, but may be set after the constructor using SetLessFunc() below
+	// LessFunc_t stateless: the tree invokes it as a temporary and stores nothing
 	CUtlOrderedMapBase( int growSize, int initSize, const LessFunc_t &lessfunc )
 	 : m_LessFunc( lessfunc ), m_Tree( growSize, initSize )
 	{
@@ -183,12 +183,6 @@ public:
 
 	// Invalid index
 	static IndexType_t InvalidIndex() { return CTree::InvalidIndex(); }
-
-	// Sets the less func
-	void SetLessFunc( LessFunc_t func )
-	{
-		m_LessFunc = func;
-	}
 
 	// Insert method (inserts in order)
 	IndexType_t Insert( const KeyType_t &key, const ElemType_t &insert ) { return m_Tree.Insert( Node_t( key, insert ) ); }
@@ -371,18 +365,18 @@ public:
 };
 
 // @Wend4r: the order of template arguments is arranged for compatibility with S1 declarations.
-template < typename K, typename T, typename I = unsigned short, typename L = bool ( * )( const K &, const K & ) >
+template < typename K, typename T, typename I = unsigned short, typename L = CDefLess< K > >
 class CUtlMap : public CUtlOrderedMapBase< K, T, L, I >
 {
 public:
 	using BaseClass = CUtlOrderedMapBase< K, T, L, I >;
 
-	CUtlMap( int growSize, int initSize, const L &lessFunc = DefLessFunc( const K ) )
+	CUtlMap( int growSize, int initSize, const L &lessFunc = L() )
 	 : BaseClass( growSize, initSize, lessFunc )
 	{
 	}
 
-	CUtlMap( const L &lessFunc = DefLessFunc( const K ) )
+	CUtlMap( const L &lessFunc = L() )
 	 : CUtlMap( 0, 0, lessFunc )
 	{
 	}
