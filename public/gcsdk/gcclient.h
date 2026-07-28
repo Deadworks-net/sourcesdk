@@ -11,15 +11,19 @@
 #endif
 
 #include "steam/steam_api.h"
+#include "steam/isteamgamecoordinator.h"
 #include "tier1/utlleanvector.h"
 #include "tier1/utlmap.h"
+#include "tier1/utlrbtree.h"
+#include "tier1/utlvector.h"
 #include "jobmgr.h"
 #include "sharedobject.h"
 #include "gcclient_sharedobjectcache.h"
 
 class ISteamGameCoordinator;
-struct GCMessageAvailable_t;
 class CTestEvent;
+class CMsgServerHello;
+enum GCConnectionStatus : int;
 
 namespace GCSDK
 {
@@ -81,8 +85,11 @@ public:
 
 protected:
 
+	ISteamUser *m_pSteamUser;
+	ISteamGameServer *m_pSteamGameserver;
 	ISteamGameCoordinator *m_pSteamGameCoordinator;
-	CUtlMemory<uint8> m_memMsg;
+	ISteamUtils *m_pSteamUtils;
+	CUtlLeanVector< uint8 > m_memMsg;
 
 	// local job handling
 	CJobMgr m_JobMgr;
@@ -91,12 +98,37 @@ protected:
 	CUtlOrderedMap< SOID_t, CGCClientSharedObjectCache *, CDefLess< SOID_t >, unsigned short > m_mapSOCache;
 
 	// Listeners are global to the client rather than per-cache
-	CUtlLeanVector< ISharedObjectListener * > m_vecListeners;
+	CUtlVector< ISharedObjectListener * > m_vecListeners;
+
+	// Message types that may be sent before a session with the GC exists
+	CUtlRBTree< uint32, CDefLess< uint32 >, unsigned short > m_treeMsgTypesAllowedWithoutSession;
+
+	void (*m_pfnPopulateServerHello)( CMsgServerHello *pMsg );
+
+	int m_nHelloAttempts;
+	uint64 m_timeLastSendHello;
+	uint64 m_timeReceivedConnectionStatus;
+	uint64 m_timeLoggedOn;
+	uint32 m_unVersion;
+	GCConnectionStatus m_eConnectionStatus;
+	const bool m_bGameserver;
+	int m_eSimulateGCConnectionFailure;
+	uint32 m_nSessionNeed;
+	uint32 m_nLastSessionNeed;
+	bool m_bWantSession;
+	uint32 m_nLauncherType;
+	int m_nLogonQueuePosition;
+	int m_nLogonQueueSize;
+	uint64 m_timeLogonQueueApproxTimeEnteredQueue;
+	uint64 m_timeLogonQueueEstimatedTimeExitQueue;
 
 	// Steam callback for getting notified about messages available. Not part of the class
 	// in Steam builds because we use the TestClientManager instead of steam_api.dll in Steam
 #ifndef STEAM
 	CCallback< CGCClient, GCMessageAvailable_t, false > m_callbackGCMessageAvailable;
+	CCallback< CGCClient, SteamServersDisconnected_t, false > m_callbackSteamServersDisconnected;
+	CCallback< CGCClient, SteamServerConnectFailure_t, false > m_callbackSteamServerConnectFailure;
+	CCallback< CGCClient, SteamServersConnected_t, false > m_callbackSteamServersConnected;
 #endif
 
 };

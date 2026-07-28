@@ -20,6 +20,7 @@
 // constructions/destruction (ie., double-deletes, etc.), including reference counting.
 #define ENABLE_SO_CONSTRUCT_DESTRUCT_PARANOIA		(defined( STAGING_ONLY ))
 
+#include "tier0/utlbuffer.h"
 #include "tier1/utlsortvector.h"
 #include "soid.h"
 

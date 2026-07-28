@@ -12,6 +12,7 @@
 #endif
 
 #include "msgbase.h"
+#include "netpacket.h"
 #include "messagelist.h"
 
 #pragma pack( push, 1 )
