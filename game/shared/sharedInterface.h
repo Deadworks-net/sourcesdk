@@ -14,7 +14,6 @@
 
 class IFileSystem;
 class IUniformRandomStream;
-class CGaussianRandomStream;
 class IEngineSound;
 class IMapData;
 
