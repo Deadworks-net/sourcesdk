@@ -204,6 +204,10 @@ public:
 	CConCommandMemberAccessor< CWorldRendererMgr > world_dump_loaded_worlds;
 };
 
+#ifdef _WIN32
 COMPILE_TIME_ASSERT( sizeof( CWorldRendererMgr ) == 864 );
+#else
+COMPILE_TIME_ASSERT( sizeof( CWorldRendererMgr ) == 1288 );
+#endif
 
 #endif // WORLDRENDERERMGR_H
