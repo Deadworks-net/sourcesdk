@@ -21,7 +21,7 @@
 #define ENABLE_SO_CONSTRUCT_DESTRUCT_PARANOIA		(defined( STAGING_ONLY ))
 
 #include "tier0/utlbuffer.h"
-#include "tier1/utlsortvector.h"
+#include "tier1/UtlSortVector.h"
 #include "soid.h"
 
 namespace google { namespace protobuf { class Message; } }
