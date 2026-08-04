@@ -114,7 +114,7 @@ function(append_sourcesdk_shared_library LIB_NAME LIB_FILENAME_OUT IMPLIB_FILENA
 
 			message(STATUS "Patching ${SOURCESDK_SHARED_LIBRARY_LIB} ...")
 			execute_process(
-				COMMAND bash -c "readelf -Ws --dyn-syms ${SOURCESDK_SHARED_LIBRARY_LIB} | awk '{print $8}' | grep -E '_ZS|_ZNS|_ZNKS|_ZN9__gnu_cxx|_ZNK9__gnu_cxx|_ZTIS|_ZTT|_ZTSS|_Zd|_Zn|_NSd|St[0-9]|Si[0-9]' | awk '{print substr($0, 3)}' | awk '{print \"_Z\" $0 \" XX\" $0}' >> ${SOURCESDK_SHARED_LIBRARY_LIB_NAME}.map && \"${SOURCESDK_PATCHELF_EXECUTABLE}\" --output ${SOURCESDK_SHARED_LIBRARY_LIB} --rename-dynamic-symbols ${SOURCESDK_SHARED_LIBRARY_LIB_NAME}.map ${SOURCESDK_SHARED_LIBRARY_LIB}"
+				COMMAND bash -c "readelf -Ws --dyn-syms ${SOURCESDK_SHARED_LIBRARY_LIB} | awk '{print $8}' | grep -E '_ZS|_ZNS|_ZNKS|_ZN9__gnu_cxx|_ZNK9__gnu_cxx|_ZTIS|_ZTT|_ZTSS|_Zd|_Zn|_NSd|St[0-9]|Si[0-9]|__cxxabiv1' | awk '{print substr($0, 3)}' | awk '{print \"_Z\" $0 \" XX\" $0}' | sort -u >> ${SOURCESDK_SHARED_LIBRARY_LIB_NAME}.map && { readelf -Ws --dyn-syms ${SOURCESDK_SHARED_LIBRARY_LIB} | awk '$7 != \"UND\" {print $8}' | sed 's/@.*//' | grep -E '^(__gxx_personality|__cxa_|__dynamic_cast)' | grep -v -E '^__cxa_(atexit|finalize|thread_atexit)$' | sort -u | awk '{print $0 \" XX\" $0}' >> ${SOURCESDK_SHARED_LIBRARY_LIB_NAME}.map || true; } && \"${SOURCESDK_PATCHELF_EXECUTABLE}\" --output ${SOURCESDK_SHARED_LIBRARY_LIB} --rename-dynamic-symbols ${SOURCESDK_SHARED_LIBRARY_LIB_NAME}.map ${SOURCESDK_SHARED_LIBRARY_LIB}"
 				WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
 				RESULT_VARIABLE SOURCESDK_PATCHELF_RESULT
 				ERROR_VARIABLE SOURCESDK_PATCHELF_ERROR
