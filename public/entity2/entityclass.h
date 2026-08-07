@@ -31,7 +31,8 @@ class CNetworkSerializerClassInfo;
 class CSchemaClassInfo;
 class CEntityClass;
 class CEntityIdentity;
-class CEntitySharedPulseSignature;
+class CEntityClassPulseSignature;
+class CPulseAPIExtensionRegistrationContext;
 class ServerClass;
 struct EntOutput_t;
 struct datamap_t;
@@ -58,6 +59,12 @@ struct EntClassComponentOverride_t
 {
 	const char* pszBaseComponent;
 	const char* pszOverrideComponent;
+};
+
+struct EntComponentNameEntry_t
+{
+	const char* pszComponentClassName;
+	size_t nOffsetInEntity;
 };
 
 class CEntityClassInfo
@@ -121,6 +128,8 @@ public:
 public:
 	using FuncToNameCb = const char *(*)(BASEPTR think_fn);
 	using NameToFuncCb = BASEPTR (*)(const char *fn_name);
+	using RegisterPulseBindingsCb = void (*)(CPulseAPIExtensionRegistrationContext *pContext);
+	using EnumerateComponentsCb = void (*)(CUtlVector<EntComponentNameEntry_t> *pOut);
 
 	ScriptClassDesc_t* m_pScriptDesc;
 
@@ -131,16 +140,16 @@ public:
 	int m_nInputCount;
 	int m_nOutputCount;
 
-	CEntitySharedPulseSignature* m_pSharedPulseSignature;
+	CEntityClassPulseSignature* m_pSharedPulseSignature;
 
-	void* m_pfnPulseBindingTraits;
+	RegisterPulseBindingsCb m_pfnRegisterPulseBindings;
 
 	// Allows to get any think functions in use or to get its string name for this class
 	// does searches to the parent classes as well
 	NameToFuncCb m_NameToThinkFunc;
 	FuncToNameCb m_ThinkFuncToName;
 
-	void* m_pfnPulseBindingUnk48;
+	EnumerateComponentsCb m_pfnEnumerateComponents;
 
 	EntClassComponentOverride_t* m_pComponentOverrides;
 
