@@ -11,6 +11,7 @@
 #include "entityhandle.h"
 #include "entitysystem.h"
 
+class CEntityInstance;
 class CKV3TransferLoadContext;
 class CKV3TransferSaveContext;
 
@@ -83,8 +84,8 @@ COMPILE_TIME_ASSERT( sizeof( CEntityOutputTemplate< int32 > ) == 32 );
 
 struct InputData_t
 {
-	CBaseEntity *pActivator;
-	CBaseEntity *pCaller;
+	CEntityInstance *pActivator;
+	CEntityInstance *pCaller;
 	variant_t value;
 	int nOutputID;
 };
