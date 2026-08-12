@@ -328,6 +328,7 @@ public:
 
 	/// Check if string ends with a given suffix (case-sensitive and fast-insensitive versions)
 	DLL_CLASS_IMPORT bool EndsWith( const char *pSuffix ) const;
+	DLL_CLASS_IMPORT bool EndsWith( const CBufferString& ) const;
 	DLL_CLASS_IMPORT bool EndsWith_FastCaseInsensitive( const char *pSuffix ) const;
 
 	/// Ensures capacity for N bytes (returns pointer and actual capacity)
@@ -404,7 +405,7 @@ public:
 	/// Removes full file path portion from path
 	DLL_CLASS_IMPORT const char *RemoveFilePath();
 	DLL_CLASS_IMPORT const char *RemoveFirstDir( CBufferString *pRemovedDir = nullptr );
-	DLL_CLASS_IMPORT const char *RemoveToFileBase();
+	DLL_CLASS_IMPORT const char *RemoveToFileBase( bool bStripAllExtensions = false );
 
 	/// Fixes broken UTF8 encoding at the end of string
 	DLL_CLASS_IMPORT bool RemovePartialUTF8Tail( bool bDefault = false );
@@ -421,7 +422,7 @@ public:
 	DLL_CLASS_IMPORT const char *ReverseChars( int nStartIndex, int nChars );
 
 	// Strips any current extension from path and ensures that extension is the new extension.
-	DLL_CLASS_IMPORT const char *SetExtension( const char *pString );
+	DLL_CLASS_IMPORT const char *SetExtension( const char *pString, bool bStripAllExtensions = false );
 
 	// Adjusts string length manually.
 	DLL_CLASS_IMPORT char *SetLength( int nLength, bool bIgnoreAlignment = false, int *pNewCapacity = nullptr );
@@ -438,6 +439,7 @@ public:
 
 	/// Check whether string starts with specified prefix.
 	DLL_CLASS_IMPORT bool StartsWith( const char *pPrefix ) const;
+	DLL_CLASS_IMPORT bool StartsWith( const CBufferString & ) const;
 	DLL_CLASS_IMPORT bool StartsWith_FastCaseInsensitive( const char *pPrefix ) const;
 
 	/// Same thing as Format/FormatV, but returns C-string.
@@ -445,7 +447,7 @@ public:
 	DLL_CLASS_IMPORT const char *StrAppendFormat( const char *pFormat, ... ) FMTFUNCTION(2, 3);
 
 	// Strips extension from filename.
-	DLL_CLASS_IMPORT const char *StripExtension();
+	DLL_CLASS_IMPORT const char *StripExtension( bool bStripAllExtensions = false );
 
 	// Remove trailing path separator.
 	DLL_CLASS_IMPORT const char *StripTrailingSlash();
