@@ -26,7 +26,7 @@ public:
 	virtual bool BYieldingRunGCJob( IMsgNetPacket *pNetPacket )	{ return false; }
 	virtual bool BYieldingRunGCJob()							{ return false; }
 
-	virtual EServerType GetServerType() { return k_EServerTypeGCClient; }
+	EServerType GetServerType() { return k_EServerTypeGCClient; }
 
 protected:
 	CGCClient *m_pGCClient;

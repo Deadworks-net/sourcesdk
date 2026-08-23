@@ -23,6 +23,7 @@
 #include "mathlib/vector4d.h"
 #include "bufferstring.h"
 #include "color.h"
+#include "mathlib/vectorws.h"
 #include "playerslot.h"
 #include "splitscreenslot.h"
 
@@ -58,6 +59,7 @@ enum EConVarType : int16_t
 	EConVarType_Vector3,
 	EConVarType_Vector4,
 	EConVarType_Qangle,
+	EConVarType_VectorWS,
 	EConVarType_MAX
 };
 
@@ -79,6 +81,7 @@ template<> constexpr EConVarType TranslateConVarType<Vector2D>( void )	{ return 
 template<> constexpr EConVarType TranslateConVarType<Vector>( void )	{ return EConVarType_Vector3; }
 template<> constexpr EConVarType TranslateConVarType<Vector4D>( void )	{ return EConVarType_Vector4; }
 template<> constexpr EConVarType TranslateConVarType<QAngle>( void )	{ return EConVarType_Qangle; }
+template<> constexpr EConVarType TranslateConVarType<VectorWS>( void )	{ return EConVarType_VectorWS; }
 template<> constexpr EConVarType TranslateConVarType<void*>( void )		{ return EConVarType_Invalid; }
 
 union CVValue_t
@@ -105,6 +108,7 @@ union CVValue_t
 	CVValue_t( const Vector &value ) : m_vec3Value( value ) {}
 	CVValue_t( const Vector4D &value ) : m_vec4Value( value ) {}
 	CVValue_t( const QAngle &value ) : m_angValue( value ) {}
+	CVValue_t( const VectorWS &value ) : m_vecwsValue( value ) {}
 	~CVValue_t() {}
 
 	operator bool() const				{ return m_bValue; }
@@ -123,6 +127,7 @@ union CVValue_t
 	operator const Vector&() const		{ return m_vec3Value; }
 	operator const Vector4D&() const	{ return m_vec4Value; }
 	operator const QAngle&() const 		{ return m_angValue; }
+	operator const VectorWS&() const 	{ return m_vecwsValue; }
 
 	bool		m_bValue;
 	int16		m_i16Value;
@@ -139,6 +144,7 @@ union CVValue_t
 	Vector		m_vec3Value;
 	Vector4D	m_vec4Value;
 	QAngle		m_angValue;
+	VectorWS	m_vecwsValue;
 };
 
 struct CVarCreationBase_t
@@ -277,7 +283,7 @@ class CCommand
 public:
 	CCommand();
 	CCommand( int nArgC, const char **ppArgV );
-	bool Tokenize( CUtlString pCommand, characterset_t *pBreakSet = nullptr );
+	bool Tokenize( const char *pCommand, const characterset_t *pBreakSet = nullptr );
 	void Reset();
 
 	int ArgC() const;
@@ -311,10 +317,10 @@ private:
 	CUtlVectorFixedGrowable<char, COMMAND_MAX_LENGTH> m_ArgvBuffer;
 	CUtlVectorFixedGrowable<char*, COMMAND_MAX_ARGC> m_Args;
 
-	// Temporary fix
-	uint8 m_Unk001 = 0;
-	uint64 m_Unk002 = 0x7FF8000000000000;
-	uint64 m_Unk003 = 0;
+	// Set from CCommandBuffer::AddText/DequeueNextCommand, reset in Tokenize
+	bool m_bFromUntrustedSource = false; // command from untrusted source (client)
+	double m_flExecTime = NAN; // NaN = execute immediately
+	uint64 m_nRequiredFlags = 0; // required ConVar flags (see CCommandBuffer::SetRequiredFlags)
 };
 
 inline int CCommand::MaxCommandLength()
@@ -554,6 +560,8 @@ public:
 	uint16 GetAccessIndex() const { return m_CommandAccessIndex; }
 	uint32 GetRegisteredIndex() const { return m_CommandRegisteredIndex; }
 
+	explicit operator bool() const { return m_CommandAccessIndex != kInvalidAccessIndex; }
+
 private:
 	// Index into internal linked list of concommands
 	uint16 m_CommandAccessIndex;
@@ -751,6 +759,7 @@ template<> void CvarTypeTrait_ValueToStringFn<Vector2D>( const CVValue_t *obj, C
 template<> void CvarTypeTrait_ValueToStringFn<Vector>( const CVValue_t *obj, CBufferString &buf ) { buf.Format( "%f %f %f", obj->m_vec3Value[0], obj->m_vec3Value[1], obj->m_vec3Value[2] ); }
 template<> void CvarTypeTrait_ValueToStringFn<Vector4D>( const CVValue_t *obj, CBufferString &buf ) { buf.Format( "%f %f %f %f", obj->m_vec4Value[0], obj->m_vec4Value[1], obj->m_vec4Value[2], obj->m_vec4Value[3] ); }
 template<> void CvarTypeTrait_ValueToStringFn<QAngle>( const CVValue_t *obj, CBufferString &buf ) { buf.Format( "%f %f %f", obj->m_angValue[0], obj->m_angValue[1], obj->m_angValue[2] ); }
+template<> void CvarTypeTrait_ValueToStringFn<VectorWS>( const CVValue_t *obj, CBufferString &buf ) { buf.Format( "%f %f %f", obj->m_vecwsValue[0], obj->m_vecwsValue[1], obj->m_vecwsValue[2] ); }
 template<> void CvarTypeTrait_ValueToStringFn<Color>( const CVValue_t *obj, CBufferString &buf )
 {
 	if( obj->m_clrValue.a() == 255 )
@@ -784,6 +793,11 @@ template<> void CvarTypeTrait_ClampFn<QAngle>( CVValue_t *obj, const CVValue_t *
 {
 	if(min) for(int i = 0; i < 3; i++) obj->m_angValue[i] = Max( obj->m_angValue[i], min->m_angValue[i] );
 	if(max) for(int i = 0; i < 3; i++) obj->m_angValue[i] = Min( obj->m_angValue[i], max->m_angValue[i] );
+}
+template<> void CvarTypeTrait_ClampFn<VectorWS>( CVValue_t *obj, const CVValue_t *min, const CVValue_t *max )
+{
+	if(min) for(int i = 0; i < 3; i++) obj->m_vecwsValue[i] = Max( obj->m_vecwsValue[i], min->m_vecwsValue[i] );
+	if(max) for(int i = 0; i < 3; i++) obj->m_vecwsValue[i] = Min( obj->m_vecwsValue[i], max->m_vecwsValue[i] );
 }
 
 class ConVarData;
@@ -847,7 +861,8 @@ static CVarTypeTraits *GetCvarTypeTraits( EConVarType type )
 		*CVarTypeTraits().InitAs<Vector2D>( "vector2", "0 0" ),
 		*CVarTypeTraits().InitAs<Vector>( "vector3", "0 0 0" ),
 		*CVarTypeTraits().InitAs<Vector4D>( "vector4", "0 0 0 0" ),
-		*CVarTypeTraits().InitAs<QAngle>( "qangle", "0 0 0" )
+		*CVarTypeTraits().InitAs<QAngle>( "qangle", "0 0 0" ),
+		*CVarTypeTraits().InitAs<VectorWS>( "vectorws", "0 0 0" )
 	};
 
 	return &s_TypeTraits[type];
@@ -1040,6 +1055,7 @@ static ConVarData *GetInvalidConVarData( EConVarType type )
 		ConVarData( TranslateConVarType<Vector>() ),
 		ConVarData( TranslateConVarType<Vector4D>() ),
 		ConVarData( TranslateConVarType<QAngle>() ),
+		ConVarData( TranslateConVarType<VectorWS>() ),
 		ConVarData( TranslateConVarType<void *>() ) // EConVarType_MAX
 	};
 
@@ -1068,11 +1084,8 @@ public:
 	bool IsValidRef() const { return m_ConVar.m_iAccessIndex != kInvalidAccessIndex; }
 	uint16 GetAccessIndex() const { return m_ConVar.m_iAccessIndex; }
 	uint32 GetRegisteredIndex() const { return m_ConVar.m_iRegisteredIndex; }
-
-	operator uint64() const
-	{
-		return m_Handle;
-	}
+	explicit operator bool() const { return m_ConVar.m_iAccessIndex != kInvalidAccessIndex; }
+	operator uint64() const { return m_Handle; }
 
 protected:
 	struct Handle_t

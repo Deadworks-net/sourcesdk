@@ -12,7 +12,11 @@
 #endif
 
 #include "tier0/fasttimer.h"
+#include "tier1/utlhashmaplarge.h"
+#include "tier1/utllinkedlist.h"
+#include "tier1/utlpair.h"
 #include "tier1/utlpriorityqueue.h"
+#include "tier1/utlvector.h"
 #include "job.h"
 #include "workthreadpool.h"
 class GCConVar;
@@ -35,7 +39,6 @@ struct JobStats_t
 	uint m_cJobsFailed;
 	uint64 m_cJobsTimedOut;		// # of jobs timed out ever
 	double m_flSumJobTimeMicrosec;
-	double m_flSumSqJobTimeMicrosec;
 	uint64 m_unMaxJobTimeMicrosec;
 
 	uint m_cTimeslices;
@@ -203,8 +206,6 @@ public:
 	void SetIsShuttingDown();
 	bool GetIsShuttingDown() const { return m_bIsShuttingDown; }
 
-	void *GetMainMemoryDebugInfo() { return g_memMainDebugInfo.Base(); }
-
 #ifdef DBGFLAG_VALIDATE
 	void Validate( CValidator &validator, const char *pchName );		// Validate our internal structures
 	static void ValidateStatics( CValidator &validator, const char *pchName );
@@ -231,9 +232,6 @@ public:
 	// cause a debug break in the given job
 	static void DebugJob( int iJob );
 
-	// disable/enable yielding for debugging
-	void SetPauseAllowed( bool bNewPauseAllowed ) { m_bDebugDisallowPause = !bNewPauseAllowed; }
-
 private:
 
 	bool BRouteWorkItemCompletedInternal( JobID_t jobID, bool bWorkItemCanceled, bool bShouldExist, bool bResumeImmediately );
@@ -247,8 +245,10 @@ private:
 	// Get an IJob given a job ID and pause reason
 	bool BGetIJob( JobID_t jobID, EJobPauseReason eJobPauseReason, bool bShouldExist, int *pIJob );
 
+protected:
+
 	// Map containing all of our jobs
-	CUtlMap<JobID_t, CJob *, int> m_MapJob;
+	CUtlHashMapLarge<JobID_t, CJob *> m_MapJob;
 
 	// jobs simply waiting until the next Run()
 	struct JobYielding_t
@@ -281,11 +281,16 @@ private:
 		uint32 m_cHeartbeatsBeforeTimeout;
 	};
 	CUtlLinkedList<JobTimeout_t, int> m_ListJobTimeouts;
-	CUtlMap<JobID_t, int, int> m_MapJobTimeoutsIndexByJobID;
+	CUtlHashMapLarge<JobID_t, int> m_MapJobTimeoutsIndexByJobID;
 	void PauseJob( CJob &job, EJobPauseReason eJobPauseReason );
 	void CheckForJobTimeouts( CLimitTimer &limitTimer );
 	void TimeoutJob( CJob &job );
 	bool m_bJobTimedOut;
+
+	typedef bool (CJobMgr::*FrameFuncFn_t)( CLimitTimer &limitTimer );
+	CUtlVector<FrameFuncFn_t> m_vecFrameFuncs;
+
+	uint64 m_nUnk110;
 
 	// thread pool usage, for running job functions in other threads
 	CWorkThreadPool m_WorkThreadPool;
@@ -305,9 +310,11 @@ private:
 	bool m_bProfiling;
 	bool m_bIsShuttingDown;
 	int m_cErrorsToReport;
-	CUtlMap< uint32, JobStatsBucket_t, int > m_mapStatsBucket;
-	CUtlMap<MsgType_t, int, int> m_mapOrphanMessages;
-	CUtlMemory<unsigned char> g_memMainDebugInfo;
+	CUtlHashMapLarge< uint64, JobStatsBucket_t > m_mapStatsBucket;
+	CUtlHashMapLarge< MsgType_t, int > m_mapOrphanMessages;
+
+	CUtlVector< MsgType_t > m_MsgContextWhitelist;
+	CUtlVector< CUtlPair< JobID_t, const char * > > m_stackDoNotYieldGuards;
 
 #ifdef GC
 	// sql profiling
@@ -341,8 +348,6 @@ private:
 	// static job debug list
 	static CUtlLinkedList<CJob *, int> sm_listAllJobs;
 #endif
-
-	bool m_bDebugDisallowPause;
 };
 
 

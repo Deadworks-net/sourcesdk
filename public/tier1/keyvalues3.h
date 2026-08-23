@@ -691,9 +691,9 @@ private:
 	uint64 m_bFreeArrayMemory : 1;
 	uint64 m_TypeEx : 8;
 	uint64 m_SubType : 8;
-	uint64 m_nFlags : 8;
 	uint64 m_nClusterElement : 16;
 	uint64 m_nNumArrayElements : 5;
+	uint64 m_nFlags : 8;
 	uint64 m_nReserved : 17;
 	Data_t m_Data;
 
@@ -751,7 +751,7 @@ public:
 	Element_t const *Base() const { return const_cast<CKeyValues3Array *>(this)->Base(); }
 
 	Element_t Element( int i );
-	const Element_t Element( int i ) const { return const_cast<CKeyValues3Array*>(this)->Element( i ); }
+	Element_t Element( int i ) const { return const_cast<CKeyValues3Array*>(this)->Element( i ); }
 	int Count() const { return m_nCount; }
 
 	void EnsureElementCapacity( int count, bool force = false, bool dont_move = false );
@@ -854,10 +854,10 @@ public:
 	int GetMemberCount() const { return m_nCount; }
 	Member_t GetMember( KV3MemberId_t id );
 	const Hash_t GetMemberHash( KV3MemberId_t id ) const;
-	const Member_t GetMember( KV3MemberId_t id ) const { return const_cast<CKeyValues3Table*>(this)->GetMember( id ); }
+	Member_t GetMember( KV3MemberId_t id ) const { return const_cast<CKeyValues3Table*>(this)->GetMember( id ); }
 	const Name_t GetMemberName( KV3MemberId_t id ) const;
 	const char *GetMemberName( const KeyValues3 *parent, KV3MemberId_t id ) const;
-	const Flags_t GetMemberFlags( KV3MemberId_t id ) const;
+	Flags_t GetMemberFlags( KV3MemberId_t id ) const;
 	CKV3MemberName GetKV3MemberName( const KeyValues3 *parent, KV3MemberId_t id ) const;
 
 	void PurgeFastSearch();
@@ -1408,7 +1408,7 @@ inline T *CKeyValues3ClusterImpl<SIZE, T>::Alloc( Args&&... args )
 
 	SetNextFree( node->m_pNextFree );
 
-	Construct( &node->m_Value, std::forward<Args>( args )... );
+	Construct( &node->m_Value, Forward< Args >( args )... );
 	node->m_Value.SetClusterElement( GetNodeIndex( &node->m_Value ) );
 
 	m_nElementCount++;
@@ -1706,7 +1706,7 @@ auto CKV3Arena::Alloc( ClusterNodeChain<CLUSTER> &partial_clusters,
 
 	if(cluster)
 	{
-		elem = cluster->Alloc( std::forward<Args>( args )... );
+		elem = cluster->Alloc( Forward< Args >( args )... );
 
 		if(cluster->IsFull())
 		{
@@ -1721,7 +1721,7 @@ auto CKV3Arena::Alloc( ClusterNodeChain<CLUSTER> &partial_clusters,
 		Construct( cluster, this, true, initial_size );
 		partial_clusters.AddToChain( cluster );
 
-		elem = cluster->Alloc( std::forward<Args>( args )... );
+		elem = cluster->Alloc( Forward< Args >( args )... );
 	}
 
 	return elem;

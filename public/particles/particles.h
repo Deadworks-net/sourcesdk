@@ -16,7 +16,7 @@
 #include "appframework/iappsystem.h"
 #if 1
 #include "materialsystem/imaterialsystem.h"
-#include "materialsystem/materialsystemutil.h"
+#include "materialsystem/MaterialSystemUtil.h"
 #else
 class IMaterial;
 class IMatRenderContext;

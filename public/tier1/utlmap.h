@@ -93,20 +93,19 @@ public:
 	class CKeyLess
 	{
 	public:
-		CKeyLess( const LessFunc_t &lessFunc = LessFunc_t{} ) : m_LessFunc( lessFunc ) {}
-		CKeyLess( LessFunc_t &&lessFunc ) : m_LessFunc( Move( lessFunc ) ) {}
+		CKeyLess() {}
+		CKeyLess( const LessFunc_t & ) {}
+		CKeyLess( LessFunc_t && ) {}
 
 		bool operator!() const
 		{
-			return !m_LessFunc;
+			return false;
 		}
 
 		bool operator()( const Node_t &left, const Node_t &right ) const
 		{
-			return m_LessFunc( left.key, right.key );
+			return LessFunc_t()( left.key, right.key );
 		}
-
-		LessFunc_t m_LessFunc;
 	};
 
 	typedef CUtlRBTree< Node_t, CKeyLess, I > CTree;
@@ -114,14 +113,14 @@ public:
 	// constructor, destructor
 	// Left at growSize = 0, the memory will first allocate 1 element and double in size
 	// at each increment.
-	// LessFunc_t is required, but may be set after the constructor using SetLessFunc() below
+	// LessFunc_t stateless: the tree invokes it as a temporary and stores nothing
 	CUtlOrderedMapBase( int growSize, int initSize, const LessFunc_t &lessfunc )
-	 : m_Tree( growSize, initSize, CKeyLess( lessfunc ) )
+	 : m_LessFunc( lessfunc ), m_Tree( growSize, initSize )
 	{
 	}
 
 	CUtlOrderedMapBase( int growSize, int initSize, LessFunc_t &&lessfunc )
-	 : m_Tree( growSize, initSize, CKeyLess( Move( lessfunc ) ) )
+	 : m_LessFunc( Move( lessfunc ) ), m_Tree( growSize, initSize )
 	{
 	}
 
@@ -151,11 +150,13 @@ public:
 	CUtlOrderedMapBase< K, T, L, I > &operator=( CUtlOrderedMapBase< K, T, L, I > &&other ) { return MoveFrom( Move( other ) ); }
 	CUtlOrderedMapBase< K, T, L, I > &CopyFrom( const CUtlOrderedMapBase< K, T, L, I > &other )
 	{
+		m_LessFunc = other.m_LessFunc;
 		m_Tree.CopyFrom( other.m_Tree );
 		return *this;
 	}
 	CUtlOrderedMapBase< K, T, L, I > &MoveFrom( CUtlOrderedMapBase< K, T, L, I > &&other )
 	{
+		m_LessFunc = Move( other.m_LessFunc );
 		m_Tree.MoveFrom( Move( other.m_Tree ) );
 		return *this;
 	}
@@ -182,12 +183,6 @@ public:
 
 	// Invalid index
 	static IndexType_t InvalidIndex() { return CTree::InvalidIndex(); }
-
-	// Sets the less func
-	void SetLessFunc( LessFunc_t func )
-	{
-		m_Tree.SetLessFunc( CKeyLess( func ) );
-	}
 
 	// Insert method (inserts in order)
 	IndexType_t Insert( const KeyType_t &key, const ElemType_t &insert ) { return m_Tree.Insert( Node_t( key, insert ) ); }
@@ -247,6 +242,29 @@ public:
 	IndexType_t PrevInorder( IndexType_t i ) const { return m_Tree.PrevInorder( i ); }
 	IndexType_t LastInorder() const { return m_Tree.LastInorder(); }
 
+	template < typename M >
+	class iterator
+	{
+	public:
+		iterator( M *p, IndexType_t i ) : m_p( p ), m_i( i ) {}
+
+		auto &operator*() const							{ return m_p->Element( m_i ); }
+		iterator &operator++()							{ m_i = m_p->NextInorder( m_i ); return *this; }
+		bool operator!=( const iterator &rhs ) const	{ return m_i != rhs.m_i; }
+
+		auto &Key() const								{ return m_p->Key( m_i ); }
+		IndexType_t Index() const						{ return m_i; }
+
+	private:
+		M *m_p;
+		IndexType_t m_i;
+	};
+
+	iterator< CUtlOrderedMapBase > begin()				{ return { this, FirstInorder() }; }
+	iterator< CUtlOrderedMapBase > end()				{ return { this, InvalidIndex() }; }
+	iterator< const CUtlOrderedMapBase > begin() const	{ return { this, FirstInorder() }; }
+	iterator< const CUtlOrderedMapBase > end() const	{ return { this, InvalidIndex() }; }
+
 	// API Matching src2 for Panorama
 	IndexType_t NextInorderSameKey( IndexType_t i ) const
 	{
@@ -292,12 +310,14 @@ public:
 
 	void Swap( CUtlOrderedMapBase< K, T, L, I > &that )
 	{
+		V_swap( m_LessFunc, that.m_LessFunc );
 		m_Tree.Swap( that.m_Tree );
 	}
 
 	CTree *AccessTree() { return &m_Tree; }
 
 protected:
+	LessFunc_t m_LessFunc;
 	CTree m_Tree;
 };
 
@@ -345,18 +365,18 @@ public:
 };
 
 // @Wend4r: the order of template arguments is arranged for compatibility with S1 declarations.
-template < typename K, typename T, typename I = unsigned short, typename L = bool ( * )( const K &, const K & ) >
+template < typename K, typename T, typename I = unsigned short, typename L = CDefLess< K > >
 class CUtlMap : public CUtlOrderedMapBase< K, T, L, I >
 {
 public:
 	using BaseClass = CUtlOrderedMapBase< K, T, L, I >;
 
-	CUtlMap( int growSize, int initSize, const L &lessFunc = DefLessFunc( const K ) )
+	CUtlMap( int growSize, int initSize, const L &lessFunc = L() )
 	 : BaseClass( growSize, initSize, lessFunc )
 	{
 	}
 
-	CUtlMap( const L &lessFunc = DefLessFunc( const K ) )
+	CUtlMap( const L &lessFunc = L() )
 	 : CUtlMap( 0, 0, lessFunc )
 	{
 	}

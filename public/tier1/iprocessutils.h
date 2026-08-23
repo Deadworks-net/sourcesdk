@@ -12,7 +12,7 @@
 #endif
 
 
-#include "appframework/IAppSystem.h"
+#include "appframework/iappsystem.h"
 #include "tier1/utlstring.h"
 #include "tier1/utlbuffer.h"
 

@@ -95,7 +95,7 @@ public:
 	virtual Color GetNetworkGroupColor( NetworkGroupId nGroupId ) = 0;
 
 	virtual void AssociateNetMessageGroupIdWithChannelCategory( NetworkCategoryId nCategoryId, const char *szGroup ) = 0;
-
+	// Deadlock: still has this slot (CS2 release removed it; upstream 6119e91b). FindNetworkMessageById etc. shift without it.
 	virtual void RegisterSchemaAtomicTypeOverride( uint32 nIdx, CSchemaType *pSchemaType ) = 0;
 
 	virtual void SetNetworkSerializationContextData( const char *szContext, NetworkSerializationMode_t eSerializationMode, NetworkContextData_t *pData ) = 0;

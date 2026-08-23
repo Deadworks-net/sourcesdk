@@ -20,6 +20,12 @@
 // constructions/destruction (ie., double-deletes, etc.), including reference counting.
 #define ENABLE_SO_CONSTRUCT_DESTRUCT_PARANOIA		(defined( STAGING_ONLY ))
 
+#include "tier0/utlbuffer.h"
+#include "tier1/UtlSortVector.h"
+#include "soid.h"
+
+namespace google { namespace protobuf { class Message; } }
+
 #include "tier0/memdbgon.h"
 
 namespace GCSDK
@@ -88,14 +94,14 @@ public:
 #endif
 
 	virtual int GetTypeID() const = 0;
-	virtual bool BParseFromMessage( const CUtlBuffer & buffer ) = 0;
-	virtual bool BParseFromMessage( const std::string &buffer ) = 0;
+	virtual bool BParseFromMessage( SOID_t ID, const CUtlBuffer & buffer ) = 0;
 	virtual bool BUpdateFromNetwork( const CSharedObject & objUpdate ) = 0;
 	virtual bool BIsKeyLess( const CSharedObject & soRHS ) const = 0;
 	virtual void Copy( const CSharedObject & soRHS ) = 0;
 	virtual void Dump() const = 0;
-	virtual bool BShouldDeleteByCache() const { return true; }
-	virtual CUtlString GetDebugString() const { return PchClassName( GetTypeID() ); };
+	virtual int Unk_FindIndexInVector( const CUtlVector< CSharedObject * > &vecObjects, const CUtlVector< int > &vecIndices ) const = 0;
+	virtual bool BAddToMessage( std::string *pBuffer, bool bUnk ) const = 0;
+	virtual bool BAddDestroyToMessage( std::string *pBuffer ) const = 0;
 
 	bool BIsKeyEqual( const CSharedObject & soRHS ) const;
 
@@ -165,17 +171,25 @@ private:
 
 	struct SharedObjectInfo_t
 	{
-		SOCreationFunc_t m_pFactoryFunction;
+		int m_nTypeID;
 		uint32 m_unFlags;
+		SOCreationFunc_t m_pFactoryFunction;
 		const char *m_pchClassName;
-		CUtlString m_sBuildCacheSubNodeName;
-		CUtlString m_sUpdateNodeName;
-		CUtlString m_sCreateNodeName;
+		const char *m_pchBuildCacheSubNodeName;
+		const char *m_pchUpdateNodeName;
+		const char *m_pchCreateNodeName;
 	};
-	static CUtlMap<int, SharedObjectInfo_t> sm_mapFactories;
+
+	class CCompareSharedObject
+	{
+	public:
+		bool Less( const SharedObjectInfo_t &lhs, const SharedObjectInfo_t &rhs, void * ) { return lhs.m_nTypeID < rhs.m_nTypeID; }
+	};
+
+	static CUtlSortVector< SharedObjectInfo_t, CCompareSharedObject > sm_vecFactories;
 
 public:
-	static const CUtlMap<int, SharedObjectInfo_t> & GetFactories() { return sm_mapFactories; }
+	static const CUtlSortVector< SharedObjectInfo_t, CCompareSharedObject > & GetFactories() { return sm_vecFactories; }
 };
 
 typedef CUtlVectorFixedGrowable<CSharedObject *, 1> CSharedObjectVec;

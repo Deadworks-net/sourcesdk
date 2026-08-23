@@ -26,6 +26,7 @@
 #include <tier0/checksum_crc.h>
 #include <steam/steamnetworkingtypes.h>
 #include <networkbasetypes.pb.h>
+#include <utlhash.h>
 
 enum server_state_t : int
 {
@@ -40,7 +41,8 @@ class IGameSpawnGroupMgr;
 struct EventServerAdvanceTick_t;
 struct EventServerPollNetworking_t;
 struct EventServerProcessNetworking_t;
-struct EventServerSimulate_t;
+struct EventServerBeginSimulate_t;
+struct EventServerEndSimulate_t;
 struct EventServerPostSimulate_t;
 struct SpawnGroupDesc_t;
 class IPrerequisite;
@@ -59,6 +61,9 @@ class CNetMessage;
 class INetworkMessageInternal;
 class CCompressedResourceManifest;
 class IRecipientFilter;
+class CBaselineEntityData;
+class CNetworkServerSpawnGroup;
+class CSteamID;
 
 typedef int ChallengeType_t;
 typedef int PauseGroup_t;
@@ -96,13 +101,12 @@ public:
 	// returns current client limit
 	virtual int		GetMaxClients( void ) const = 0;
 
-	virtual float   GetUnk() const = 0;
-
 	virtual void	ServerAdvanceTick( const EventServerAdvanceTick_t & ) = 0;
 	virtual void	ServerPollNetworking( const EventServerPollNetworking_t & ) = 0;
 	virtual void	ServerProcessNetworking( const EventServerProcessNetworking_t & ) = 0;
 
-	virtual void	ServerSimulate( const EventServerSimulate_t & ) = 0;
+	virtual void	ServerBeginSimulate( const EventServerBeginSimulate_t & ) = 0;
+	virtual void	ServerEndSimulate( const EventServerEndSimulate_t & ) = 0;
 	virtual void	ServerPostSimulate( const EventServerPostSimulate_t & ) = 0;
 
 	virtual SpawnGroupHandle_t LoadSpawnGroup( const SpawnGroupDesc_t & ) = 0;
@@ -143,11 +147,11 @@ public:
 	virtual void	FinishChangeLevel( CServerChangelevelState * ) = 0;
 	virtual bool	IsChangelevelPending( void ) const = 0;
 
-	virtual void	GetAllLoadingSpawnGroups( CUtlVector<SpawnGroupHandle_t> *pOut ) = 0;
+	virtual void	GetAllLoadingSpawnGroups( CUtlVector< SpawnGroupHandle_t > &pOut ) = 0;
 
 	virtual void	PreserveSteamID( void ) = 0;
 
-	virtual const CSVCMsg_GameSessionConfiguration &GetGameConfig() = 0;
+	virtual CSVCMsg_GameSessionConfiguration &GetGameConfig() = 0;
 
 	virtual void	ReserveServerForQueuedGame( const char *pszReason ) = 0;
 
@@ -158,19 +162,28 @@ public:
 	virtual void	BroadcastPrintf( const char *pszFmt, ... ) FMTFUNCTION( 2, 3 ) = 0;
 
 	virtual void	SetClientConnect( CPlayerSlot slot, bool b = true ) = 0;
+	virtual SignonState_t	GetClientSignonState( CPlayerSlot slot ) = 0;
 
-	virtual void	NotifySceneViewDebugOverlays( void *pSceneView, bool bUnk ) {};
+	virtual void	NotifySceneViewDebugOverlays( void *pSceneView, bool bUnk ) = 0;
 
 	virtual void	BroadcastMessage( INetworkMessageInternal *pSerializer, const CNetMessage *pNetMessage, const IRecipientFilter *pFilter ) = 0;
 	virtual bool	IsRecordingDemo() = 0;
 
 	virtual uint8	GetClientConnectionType( CPlayerSlot slot ) = 0;
-	virtual bool	GetUnk2() = 0;
-	virtual float	GetUnk3() = 0;
-	virtual uint64	GetUnk4() = 0;
+
+	virtual bool	HasReplayDirector() = 0;
+	virtual float	GetAverageFrameTime() = 0;
+
+	virtual void	PreWorldUpdate() = 0;
 	virtual void 	DirectUpdate() = 0;
+
+	virtual CSteamID	GetGameServerSteamID() = 0;
+
+	virtual bool BroadcastVoiceData( int nEntityIndex, void *pVoiceData, uint64 xuidFrom ) = 0;
 };
 
+// Deadlock: this class body is carried verbatim from the pre-merge fork (5ab6a108). Upstream rewrote the
+// member list for current CS2 and m_Clients lands 8 bytes early (584 vs 592) -> AV in GetClientBySlot.
 class CNetworkGameServerBase : public INetworkGameServer, protected IConnectionlessPacketHandler, protected IConVarListener
 {
 public:
@@ -309,26 +322,26 @@ public:
 	bool unk1140;
 	bool m_bIsMultiplayer;
 };
+// Deadlock: verified against the live server (GetClientBySlot).
+COMPILE_TIME_ASSERT( offsetof( CNetworkGameServerBase, m_Clients ) == 0x250 );
 
 class CNetworkGameServer : public CNetworkGameServerBase {
 public:
 	CUtlString m_szStartspot;
 	bf_write m_FullSendTables;
-	CUtlLeanVector<byte> m_FullSendTablesBuffer;
-	CPrecacheItem generic_precache[MAX_GENERIC];
-	char pad9456[8];
-	CPrecacheItem decal_precache[MAX_BASE_DECALS];
-	char pad17656[8];
+	CUtlLeanVector<byte> m_FullSendTablesBuffer; // buffer for m_FullSendTables
+	int m_nMaxPrecacheEntries;
+	CPrecacheItem m_Precache[MAX_GENERIC];
 	INetworkStringTable* m_pGenericPrecacheTable;
-	INetworkStringTable* m_pDecalPrecacheTable;
-	CPureServerWhitelist* m_pPureServerWhitelist;
-	bool allowsignonwrites;
-}; // sizeof 17696
+	bool m_bAllowSignonWrites;
+}; // sizeof 10056 (0x2748)
 
-class CHLTVServer : public CNetworkGameServerBase {
+
+class CHLTVServer : public CNetworkGameServerBase
+{
 public:
 
-}; // sizeof 2824864
+}; // sizeof 3120232
 
 abstract_class INetworkServerService : public IEngineService
 {

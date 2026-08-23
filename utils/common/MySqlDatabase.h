@@ -13,8 +13,8 @@
 
 #include <windows.h>
 #include "ISQLDBReplyTarget.h"
-#include "UtlVector.h"
-#include "UtlLinkedList.h"
+#include "utlvector.h"
+#include "utllinkedlist.h"
 
 class ISQLDBCommand;
 

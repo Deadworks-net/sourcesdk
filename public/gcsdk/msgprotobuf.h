@@ -215,6 +215,7 @@ private:
 } // namespace GCDSK
 
 // The rest of the file needs memdbgon because the code in the templates do actual allocation
+#include "tier0/vprof.h"
 #include "tier0/memdbgon.h"
 
 namespace GCSDK

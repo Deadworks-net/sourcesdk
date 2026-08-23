@@ -16,7 +16,9 @@
 #include "tier0/dbg.h"
 #include "tier0/murmurhash3.h"
 #include "bitvec.h"
+#include "utlcommon.h"
 #include "utlmap.h"
+#include "utlleanvector.h"
 
 // fast mod for power of 2 numbers
 namespace basetypes
@@ -53,16 +55,24 @@ class CDefEquals<T*>
 public:
 	CDefEquals() {}
 	CDefEquals( int i ) {}
-	inline bool operator()( const T *lhs, const T *rhs ) const 
-	{ 
+	inline bool operator()( const T *lhs, const T *rhs ) const
+	{
 		if ( lhs == rhs	)
 			return true;
 		else if ( NULL == lhs || NULL == rhs )
 			return false;
 		else
-			return ( *lhs == *rhs );	
+			return ( *lhs == *rhs );
 	}
 	inline bool operator!() const { return false; }
+};
+
+
+template <typename T>
+class CUtlHashMapLargeDefEquals : public CDefEquals<T>
+{
+public:
+	using CDefEquals<T>::CDefEquals;
 };
 
 
@@ -96,8 +106,8 @@ struct CaseSensitiveStrEquals
 //	However, it is slower (by about 20%) than CUtlHashTable
 //
 //-----------------------------------------------------------------------------
-template <typename K, typename T, typename L = CDefEquals<K>, typename H = MurmurHash3Functor<K> > 
-class CUtlHashMapLarge : public base_utlmap_t
+template <typename K, typename T, typename L, typename H, typename I, typename BV>
+class CUtlHashMapImpl : public base_utlmap_t
 {
 public:
 	// This enum exists so that FOR_EACH_MAP and FOR_EACH_MAP_FAST cannot accidentally
@@ -112,30 +122,28 @@ public:
 
 	typedef K KeyType_t;
 	typedef T ElemType_t;
-	typedef int IndexType_t;
+	typedef I IndexType_t;
 	typedef L EqualityFunc_t;
 	typedef H HashFunc_t;
 
-	CUtlHashMapLarge()
+	CUtlHashMapImpl()
 	{
 		m_cElements = 0;
-		m_nMaxElement = 0;
 		m_nMinRehashedBucket = InvalidIndex();
 		m_nMaxRehashedBucket = InvalidIndex();
 		m_iNodeFreeListHead = InvalidIndex();
 	}
 
-	CUtlHashMapLarge( int cElementsExpected )
+	CUtlHashMapImpl( int cElementsExpected )
 	{
 		m_cElements = 0;
-		m_nMaxElement = 0;
 		m_nMinRehashedBucket = InvalidIndex();
 		m_nMaxRehashedBucket = InvalidIndex();
 		m_iNodeFreeListHead = InvalidIndex();
 		EnsureCapacity( cElementsExpected );
 	}
 
-	~CUtlHashMapLarge()
+	~CUtlHashMapImpl()
 	{
 		RemoveAll();
 	}
@@ -152,13 +160,38 @@ public:
 	IndexType_t Count() const								{ return m_cElements; }
 
 	// Max "size" of the vector
-	IndexType_t  MaxElement() const							{ return m_nMaxElement; }
+	IndexType_t  MaxElement() const							{ return m_memNodes.Count(); }
 
 	// Checks if a node is valid and in the map
-	bool  IsValidIndex( IndexType_t i ) const				{ return i >= 0 && i < m_nMaxElement && !IsFreeNodeID( m_memNodes[i].m_iNextNode ); }
+	bool  IsValidIndex( IndexType_t i ) const				{ return i >= 0 && i < m_memNodes.Count() && !IsFreeNodeID( m_memNodes[i].m_iNextNode ); }
 
 	// Invalid index
 	static IndexType_t InvalidIndex()						{ return -1; }
+
+	template < typename M >
+	class iterator
+	{
+	public:
+		iterator( M *p, IndexType_t i ) : m_p( p ), m_i( i )	{ Skip(); }
+
+		auto &operator*() const							{ return m_p->Element( m_i ); }
+		iterator &operator++()							{ ++m_i; Skip(); return *this; }
+		bool operator!=( const iterator &rhs ) const	{ return m_i != rhs.m_i; }
+
+		auto &Key() const								{ return m_p->Key( m_i ); }
+		IndexType_t Index() const						{ return m_i; }
+
+	private:
+		void Skip()										{ while ( m_i < m_p->MaxElement() && !m_p->IsValidIndex( m_i ) ) ++m_i; }
+
+		M *m_p;
+		IndexType_t m_i;
+	};
+
+	iterator< CUtlHashMapImpl > begin()					{ return { this, 0 }; }
+	iterator< CUtlHashMapImpl > end()						{ return { this, MaxElement() }; }
+	iterator< const CUtlHashMapImpl > begin() const		{ return { this, 0 }; }
+	iterator< const CUtlHashMapImpl > end() const			{ return { this, MaxElement() }; }
 
 	// Insert method
 	IndexType_t  Insert( const KeyType_t &key, const ElemType_t &insert )						{ return InsertInternal( key, insert, eInsert_UpdateExisting ); }
@@ -194,14 +227,13 @@ public:
 	void Purge();
 	void PurgeAndDeleteElements();
 
-	void Swap( CUtlHashMapLarge<K,T,L,H> &rhs )
+	void Swap( CUtlHashMapImpl<K,T,L,H,I,BV> &rhs )
 	{
 		m_vecHashBuckets.Swap( rhs.m_vecHashBuckets );
 		V_swap( m_bitsMigratedBuckets, rhs.m_bitsMigratedBuckets );
 		m_memNodes.Swap( rhs.m_memNodes );
 		V_swap( m_iNodeFreeListHead, rhs.m_iNodeFreeListHead );
 		V_swap( m_cElements, rhs.m_cElements );
-		V_swap( m_nMaxElement, rhs.m_nMaxElement );
 		V_swap( m_nMinRehashedBucket, rhs.m_nMinRehashedBucket );
 		V_swap( m_nMaxRehashedBucket, rhs.m_nMaxRehashedBucket );
 		V_swap( m_EqualityFunc, rhs.m_EqualityFunc );
@@ -228,9 +260,9 @@ private:
 	{
 		IndexType_t m_iNode;
 	};
-	CUtlVector<HashBucket_t> m_vecHashBuckets;
+	CUtlLeanVector<HashBucket_t> m_vecHashBuckets;
 
-	CLargeVarBitVec m_bitsMigratedBuckets;
+	BV m_bitsMigratedBuckets;
 
 	struct Node_t
 	{
@@ -238,28 +270,63 @@ private:
 		ElemType_t m_elem;
 		int m_iNextNode;
 	};
-	CUtlLeanVector<Node_t> m_memNodes;
+
+	class CNodeVector : public CUtlLeanVector<Node_t>
+	{
+	public:
+		void DropAll()	{ this->m_nCount = 0; }
+	};
+	CNodeVector m_memNodes;
 	IndexType_t m_iNodeFreeListHead;
 
 	IndexType_t m_cElements;
-	IndexType_t m_nMaxElement;
 	IndexType_t m_nMinRehashedBucket, m_nMaxRehashedBucket;
+
 	EqualityFunc_t m_EqualityFunc;
 	HashFunc_t m_HashFunc;
 };
 
 
 //-----------------------------------------------------------------------------
+// Purpose:	The bit string tracking migrated buckets keeps its first two dwords
+//	inline, so a map that never outgrows 64 buckets does not allocate for it.
+//-----------------------------------------------------------------------------
+template <typename K, typename T, typename L = CUtlHashMapLargeDefEquals<K>, typename H = MurmurHash3Functor<K> >
+struct CUtlHashMapLarge : CUtlHashMapImpl<K, T, L, H, int, CLargeVarBitVec>
+{
+	typedef CUtlHashMapImpl<K, T, L, H, int, CLargeVarBitVec> BaseClass_t;
+
+	CUtlHashMapLarge() {}
+	CUtlHashMapLarge( int cElementsExpected ) : BaseClass_t( cElementsExpected ) {}
+};
+
+
+//-----------------------------------------------------------------------------
+// Purpose:	The same container over a resizable bit string, which also lets the
+//	index type be chosen.
+//-----------------------------------------------------------------------------
+template <typename K, typename T, typename L = CDefEquals<K>, typename H = DefaultHashFunctor<K>, typename I = int>
+struct CUtlHashMap : CUtlHashMapImpl<K, T, L, H, I, CVariableBitString>
+{
+	typedef CUtlHashMapImpl<K, T, L, H, I, CVariableBitString> BaseClass_t;
+
+	CUtlHashMap() {}
+	CUtlHashMap( int cElementsExpected ) : BaseClass_t( cElementsExpected ) {}
+};
+
+
+//-----------------------------------------------------------------------------
 // Purpose: inserts an item into the map
 //-----------------------------------------------------------------------------
-template <typename K, typename T, typename L, typename H> 
-inline int CUtlHashMapLarge<K,T,L,H>::InsertInternal( const KeyType_t &key, const ElemType_t &insert, EInsertPolicy ePolicy )
+template <typename K, typename T, typename L, typename H, typename I, typename BV> 
+inline I CUtlHashMapImpl<K,T,L,H,I,BV>::InsertInternal( const KeyType_t &key, const ElemType_t &insert, EInsertPolicy ePolicy )
 {
 	// make sure we have room in the hash table
 	if ( m_cElements >= m_vecHashBuckets.Count() )
 		EnsureCapacity( MAX( 16, m_vecHashBuckets.Count() * 2 ) );
-	if ( m_cElements >= m_memNodes.Count() )
-		m_memNodes.Grow( m_memNodes.Count() * 2 );
+
+	if ( m_cElements >= m_memNodes.NumAllocated() )
+		m_memNodes.EnsureCapacity( MAX( 16, m_memNodes.NumAllocated() * 2 ), true );
 
 	// rehash incrementally
 	IncrementalRehash();
@@ -314,10 +381,10 @@ inline int CUtlHashMapLarge<K,T,L,H>::InsertInternal( const KeyType_t &key, cons
 //-----------------------------------------------------------------------------
 // Purpose: grows the map to fit the specified amount
 //-----------------------------------------------------------------------------
-template <typename K, typename T, typename L, typename H> 
-inline void CUtlHashMapLarge<K,T,L,H>::EnsureCapacity( int amount )
+template <typename K, typename T, typename L, typename H, typename I, typename BV> 
+inline void CUtlHashMapImpl<K,T,L,H,I,BV>::EnsureCapacity( int amount )
 {
-	m_memNodes.EnsureCapacity( amount );
+	m_memNodes.EnsureCapacity( amount, true );
 	// ::OutputDebugStr( CFmtStr( "grown m_memNodes from %d to %d\n", m_cElements, m_memNodes.Count() ).Access() );
 
 	if ( amount <= m_vecHashBuckets.Count() )
@@ -329,8 +396,10 @@ inline void CUtlHashMapLarge<K,T,L,H>::EnsureCapacity( int amount )
 	// ::OutputDebugStr( CFmtStr( "grown m_vecHashBuckets from %d to %d\n", m_vecHashBuckets.Count(), cBucketsNeeded ).Access() );
 
 	// grow the hash buckets
-	int grow = cBucketsNeeded - m_vecHashBuckets.Count();
-	int iFirst = m_vecHashBuckets.AddMultipleToTail( grow );
+	int oldCount = m_vecHashBuckets.Count();
+	int grow = cBucketsNeeded - oldCount;
+	m_vecHashBuckets.EnsureCount( cBucketsNeeded );
+	int iFirst = oldCount;
 	// clear all the new data to invalid bits
 	memset( &m_vecHashBuckets[iFirst], 0xFFFFFFFF, grow*sizeof(m_vecHashBuckets[iFirst]) );
 	Assert( basetypes::IsPowerOf2( m_vecHashBuckets.Count() ) );
@@ -356,14 +425,16 @@ inline void CUtlHashMapLarge<K,T,L,H>::EnsureCapacity( int amount )
 //-----------------------------------------------------------------------------
 // Purpose: gets a new node, from the free list if possible
 //-----------------------------------------------------------------------------
-template <typename K, typename T, typename L, typename H> 
-inline int CUtlHashMapLarge<K,T,L,H>::AllocNode()
+template <typename K, typename T, typename L, typename H, typename I, typename BV>
+inline int CUtlHashMapImpl<K,T,L,H,I,BV>::AllocNode()
 {
-	// if we're out of free elements, get the max
-	if ( m_cElements == m_nMaxElement )
+	// if we're out of free elements, grow the vector by one uninitialized
+	if ( m_iNodeFreeListHead == InvalidIndex() )
 	{
+		const int iNewNode = m_memNodes.Count();
+		m_memNodes.Grow();
 		m_cElements++;
-		return m_nMaxElement++;
+		return iNewNode;
 	}
 
 	// pull from the free list
@@ -378,8 +449,8 @@ inline int CUtlHashMapLarge<K,T,L,H>::AllocNode()
 //-----------------------------------------------------------------------------
 // Purpose: takes a bucket of nodes and re-hashes them into a more optimal bucket
 //-----------------------------------------------------------------------------
-template <typename K, typename T, typename L, typename H> 
-inline void CUtlHashMapLarge<K,T,L,H>::RehashNodesInBucket( int iBucketSrc )
+template <typename K, typename T, typename L, typename H, typename I, typename BV> 
+inline void CUtlHashMapImpl<K,T,L,H,I,BV>::RehashNodesInBucket( int iBucketSrc )
 {
 	// mark us as migrated
 	m_bitsMigratedBuckets.Set( iBucketSrc );
@@ -415,8 +486,8 @@ inline void CUtlHashMapLarge<K,T,L,H>::RehashNodesInBucket( int iBucketSrc )
 //-----------------------------------------------------------------------------
 // Purpose: searches for an item by key, returning the index handle
 //-----------------------------------------------------------------------------
-template <typename K, typename T, typename L, typename H> 
-inline int CUtlHashMapLarge<K,T,L,H>::Find( const KeyType_t &key ) const
+template <typename K, typename T, typename L, typename H, typename I, typename BV> 
+inline I CUtlHashMapImpl<K,T,L,H,I,BV>::Find( const KeyType_t &key ) const
 {
 	if ( m_cElements == 0 )
 		return InvalidIndex();
@@ -456,13 +527,13 @@ inline int CUtlHashMapLarge<K,T,L,H>::Find( const KeyType_t &key ) const
 //-----------------------------------------------------------------------------
 // Purpose: searches for an item by key, returning the index handle
 //-----------------------------------------------------------------------------
-template <typename K, typename T, typename L, typename H> 
-inline int CUtlHashMapLarge<K,T,L,H>::FindInBucket( int iBucket, const KeyType_t &key ) const
+template <typename K, typename T, typename L, typename H, typename I, typename BV> 
+inline int CUtlHashMapImpl<K,T,L,H,I,BV>::FindInBucket( int iBucket, const KeyType_t &key ) const
 {
 	if ( m_vecHashBuckets[iBucket].m_iNode != InvalidIndex() )
 	{
 		IndexType_t iNode = m_vecHashBuckets[iBucket].m_iNode;
-		Assert( iNode < m_nMaxElement );
+		Assert( iNode < m_memNodes.Count() );
 		while ( iNode != InvalidIndex() )
 		{
 			// equality check
@@ -480,8 +551,8 @@ inline int CUtlHashMapLarge<K,T,L,H>::FindInBucket( int iBucket, const KeyType_t
 //-----------------------------------------------------------------------------
 // Purpose: links a node into a bucket
 //-----------------------------------------------------------------------------
-template <typename K, typename T, typename L, typename H> 
-void CUtlHashMapLarge<K,T,L,H>::LinkNodeIntoBucket( int iBucket, int iNewNode )
+template <typename K, typename T, typename L, typename H, typename I, typename BV> 
+void CUtlHashMapImpl<K,T,L,H,I,BV>::LinkNodeIntoBucket( int iBucket, int iNewNode )
 {
 	// add into the start of the bucket's list
 	m_memNodes[iNewNode].m_iNextNode = m_vecHashBuckets[iBucket].m_iNode;
@@ -492,8 +563,8 @@ void CUtlHashMapLarge<K,T,L,H>::LinkNodeIntoBucket( int iBucket, int iNewNode )
 //-----------------------------------------------------------------------------
 // Purpose: unlinks a node from the bucket
 //-----------------------------------------------------------------------------
-template <typename K, typename T, typename L, typename H> 
-void CUtlHashMapLarge<K,T,L,H>::UnlinkNodeFromBucket( int iBucket, int iNodeToUnlink )
+template <typename K, typename T, typename L, typename H, typename I, typename BV> 
+void CUtlHashMapImpl<K,T,L,H,I,BV>::UnlinkNodeFromBucket( int iBucket, int iNodeToUnlink )
 {
 	int iNodeNext = m_memNodes[iNodeToUnlink].m_iNextNode;
 
@@ -524,8 +595,8 @@ void CUtlHashMapLarge<K,T,L,H>::UnlinkNodeFromBucket( int iBucket, int iNodeToUn
 //-----------------------------------------------------------------------------
 // Purpose: removes a single item from the map
 //-----------------------------------------------------------------------------
-template <typename K, typename T, typename L, typename H> 
-inline void CUtlHashMapLarge<K,T,L,H>::RemoveAt( IndexType_t i )
+template <typename K, typename T, typename L, typename H, typename I, typename BV> 
+inline void CUtlHashMapImpl<K,T,L,H,I,BV>::RemoveAt( IndexType_t i )
 {
 	if ( !IsValidIndex( i ) )
 	{
@@ -563,8 +634,8 @@ inline void CUtlHashMapLarge<K,T,L,H>::RemoveAt( IndexType_t i )
 //-----------------------------------------------------------------------------
 // Purpose: removes a node from the bucket, return true if it was found
 //-----------------------------------------------------------------------------
-template <typename K, typename T, typename L, typename H> 
-inline bool CUtlHashMapLarge<K,T,L,H>::RemoveNodeFromBucket( IndexType_t iBucket, int iNodeToRemove )
+template <typename K, typename T, typename L, typename H, typename I, typename BV> 
+inline bool CUtlHashMapImpl<K,T,L,H,I,BV>::RemoveNodeFromBucket( int iBucket, int iNodeToRemove )
 {
 	IndexType_t iNode = m_vecHashBuckets[iBucket].m_iNode;
 	while ( iNode != InvalidIndex() )
@@ -597,8 +668,8 @@ inline bool CUtlHashMapLarge<K,T,L,H>::RemoveNodeFromBucket( IndexType_t iBucket
 //-----------------------------------------------------------------------------
 // Purpose: removes all items from the hash map
 //-----------------------------------------------------------------------------
-template <typename K, typename T, typename L, typename H> 
-inline void CUtlHashMapLarge<K,T,L,H>::RemoveAll()
+template <typename K, typename T, typename L, typename H, typename I, typename BV> 
+inline void CUtlHashMapImpl<K,T,L,H,I,BV>::RemoveAll()
 {
 	FOR_EACH_MAP_FAST( *this, i )
 	{
@@ -607,7 +678,7 @@ inline void CUtlHashMapLarge<K,T,L,H>::RemoveAll()
 	}
 
 	m_cElements = 0;
-	m_nMaxElement = 0;
+	m_memNodes.DropAll();
 	m_iNodeFreeListHead = InvalidIndex();
 	m_nMinRehashedBucket = m_vecHashBuckets.Count();
 	m_nMaxRehashedBucket = InvalidIndex();
@@ -619,8 +690,8 @@ inline void CUtlHashMapLarge<K,T,L,H>::RemoveAll()
 //-----------------------------------------------------------------------------
 // Purpose: removes all items from the hash map and releases memory
 //-----------------------------------------------------------------------------
-template <typename K, typename T, typename L, typename H> 
-inline void CUtlHashMapLarge<K,T,L,H>::Purge()
+template <typename K, typename T, typename L, typename H, typename I, typename BV>
+inline void CUtlHashMapImpl<K,T,L,H,I,BV>::Purge()
 {
 	FOR_EACH_MAP_FAST( *this, i )
 	{
@@ -629,13 +700,15 @@ inline void CUtlHashMapLarge<K,T,L,H>::Purge()
 	}
 
 	m_cElements = 0;
-	m_nMaxElement = 0;
 	m_iNodeFreeListHead = InvalidIndex();
 	m_nMinRehashedBucket = InvalidIndex();
 	m_nMaxRehashedBucket = InvalidIndex();
 
 	m_bitsMigratedBuckets.Resize( 0 );
+
+	m_memNodes.DropAll();
 	m_memNodes.Purge();
+
 	m_vecHashBuckets.Purge();
 }
 
@@ -643,8 +716,8 @@ inline void CUtlHashMapLarge<K,T,L,H>::Purge()
 //-----------------------------------------------------------------------------
 // Purpose: removes and deletes all items from the hash map and releases memory
 //-----------------------------------------------------------------------------
-template <typename K, typename T, typename L, typename H> 
-inline void CUtlHashMapLarge<K,T,L,H>::PurgeAndDeleteElements()
+template <typename K, typename T, typename L, typename H, typename I, typename BV> 
+inline void CUtlHashMapImpl<K,T,L,H,I,BV>::PurgeAndDeleteElements()
 {
 	FOR_EACH_MAP_FAST( *this, i )
 	{
@@ -658,8 +731,8 @@ inline void CUtlHashMapLarge<K,T,L,H>::PurgeAndDeleteElements()
 //-----------------------------------------------------------------------------
 // Purpose: rehashes buckets
 //-----------------------------------------------------------------------------
-template <typename K, typename T, typename L, typename H> 
-inline void CUtlHashMapLarge<K,T,L,H>::IncrementalRehash()
+template <typename K, typename T, typename L, typename H, typename I, typename BV> 
+inline void CUtlHashMapImpl<K,T,L,H,I,BV>::IncrementalRehash()
 {
 	if ( m_nMinRehashedBucket < m_nMaxRehashedBucket )
 	{

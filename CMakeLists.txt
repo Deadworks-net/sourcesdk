@@ -45,6 +45,7 @@ option(SOURCESDK_AM_DEFINES "Compile with AlliedModders definition set" OFF)
 option(SOURCESDK_COMPILE_PROTOBUF "Compile Protocol Buffers" ON)
 option(SOURCESDK_CONFIGURE_EXPORT_MAP "Configure export symbols/map (Unix only)" ON)
 option(SOURCESDK_CREATE_INTEFACE_OVERRIDE "Enable it if you are using your own CreateInteface" OFF)
+option(SOURCESDK_ENABLE_TESTS "Build Source SDK tests" OFF)
 option(SOURCESDK_LINK_TIER0 "Link with tier0" ON)
 option(SOURCESDK_LINK_STEAMWORKS "Link with Steam API" ON)
 option(SOURCESDK_LINK_STRIP_CPP_EXPORTS "Strip C++/STL export funcitons from linked libraries (e.g. tier0 and steam_api)" OFF)
@@ -61,6 +62,7 @@ set(SOURCESDK_INTERFACES_DIR "${SOURCESDK_DIR}/interfaces")
 set(SOURCESDK_MATHLIB_DIR "${SOURCESDK_DIR}/mathlib")
 set(SOURCESDK_PUBLIC_DIR "${SOURCESDK_DIR}/public")
 set(SOURCESDK_SYMBOLS_DIR "${SOURCESDK_DIR}/sym")
+set(SOURCESDK_NETWORKSYSTEM_DIR "${SOURCESDK_DIR}/networksystem")
 set(SOURCESDK_TIER1_DIR "${SOURCESDK_DIR}/tier1")
 
 set(SOURCESDK_NEEDED_PROTOS
@@ -71,6 +73,7 @@ set(SOURCESDK_NEEDED_PROTOS
 	gameevents
 	usermessages
 	source2_steam_stats
+	valveextensions
 )
 
 include(cmake/platform/shared.cmake)
@@ -104,6 +107,7 @@ include(cmake/sourcesdk/targets/engine.cmake)
 include(cmake/sourcesdk/targets/entity2.cmake)
 include(cmake/sourcesdk/targets/interfaces.cmake)
 include(cmake/sourcesdk/targets/mathlib.cmake)
+include(cmake/sourcesdk/targets/networksystem.cmake)
 
 if(SOURCESDK_COMPILE_PROTOBUF)
 	include(cmake/sourcesdk/targets/protos.cmake)
@@ -150,6 +154,7 @@ set(SOURCESDK_LINK_LIBRARIES
 	${SOURCESDK_ENTITY2_NAME}
 	${SOURCESDK_INTERFACES_NAME}
 	${SOURCESDK_MATHLIB_NAME}
+	${SOURCESDK_NETWORKSYSTEM_NAME}
 	${SOURCESDK_PROTOS_NAME}
 	${SOURCESDK_TIER1_NAME}
 )
@@ -166,4 +171,9 @@ target_link_libraries(${PROJECT_NAME} PUBLIC ${PLATFORM_LINK_LIBRARIES} ${SOURCE
 
 if(SOURCESDK_COMPILE_PROTOBUF)
 	target_link_libraries(${PROJECT_NAME} PUBLIC ${PROTOBUF_LIBPPROTOBUF_NAME})
+endif()
+
+if(SOURCESDK_ENABLE_TESTS)
+	enable_testing()
+	add_subdirectory(tests)
 endif()

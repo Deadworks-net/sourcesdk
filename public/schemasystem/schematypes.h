@@ -363,7 +363,8 @@ struct SchemaClassInfoData_t
 	
 	const char* m_pszName;
 	const char* m_pszProjectName;
-	
+	// Deadlock: no m_pszCPPName (CS2-only, upstream f273c4a3). With it m_pFields/m_nFieldCount shift by 8.
+
 	int m_nSize;
 
 	uint16 m_nFieldCount;
@@ -396,6 +397,8 @@ struct SchemaClassInfoData_t
 		return m_pBaseClasses->m_pClass;
 	}
 };
+// Deadlock: verified against the live server (schema field walk in Deadworks).
+COMPILE_TIME_ASSERT( offsetof( SchemaClassInfoData_t, m_pFields ) == 0x28 );
 
 class CSchemaClassInfo : public SchemaClassInfoData_t
 {

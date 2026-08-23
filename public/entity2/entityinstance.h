@@ -18,54 +18,28 @@ struct CEntityPrecacheContext;
 struct ChangeAccessorFieldPathIndexInfo_t;
 struct datamap_t;
 class IScriptVM;
+class CNetworkSerializerClassInfo;
+struct NetworkSharedChangeInfoOverflow_t;
+
+// See entitynetwork.h
+struct NetworkStateChanged_t;
+struct NetworkStateChangedRemove_t;
 
 extern IScriptVM* ScriptVM();
 
-struct NetworkStateChanged_t
+class CEntityPrivateScriptScope
 {
-	NetworkStateChanged_t() : m_Unk00(1), m_Unk48(-1), m_nArrayIndex(-1), m_nPathIndex(ChangeAccessorFieldPathIndex_t()), m_Unk60(0) { }
-	explicit NetworkStateChanged_t( bool bFullChanged ) : m_Unk00(static_cast<uint32>(!bFullChanged)), m_Unk48(-1), m_nArrayIndex(-1), m_nPathIndex(ChangeAccessorFieldPathIndex_t()), m_Unk60(0) { }
-
-	// nLocalOffset is the flattened field offset
-	//		calculated taking into account embedded structures
-	//		if PathIndex is specified, then the offset must start from the last object in the chain
-	// nArrayIndex is the index of the array element 
-	//		if the field is a CNetworkUtlVectorBase, otherwise pass -1
-	// nPathIndex is the value to specify 
-	//		if the path to the field goes through one or more pointers, otherwise pass -1
-	// 		this value is usually a member of the CNetworkVarChainer and belongs to the last object in the chain
-	NetworkStateChanged_t( uint32 nLocalOffset, int32 nArrayIndex = -1, ChangeAccessorFieldPathIndex_t nPathIndex = ChangeAccessorFieldPathIndex_t() ) : m_Unk00(1), m_LocalOffsets{ nLocalOffset }, m_Unk48(-1), m_nArrayIndex(nArrayIndex), m_nPathIndex(nPathIndex), m_Unk60(0) { }
-	NetworkStateChanged_t( CUtlVector<uint32> vecLocalOffsets, int32 nArrayIndex = -1, ChangeAccessorFieldPathIndex_t nPathIndex = ChangeAccessorFieldPathIndex_t() ) : m_Unk00(1), m_LocalOffsets(Move(vecLocalOffsets)), m_Unk48(-1), m_nArrayIndex(nArrayIndex), m_nPathIndex(nPathIndex), m_Unk60(1) { }
-
-	uint32 m_Unk00; // Perhaps it is an enum, default 1, when 0 adds FL_FULL_EDICT_CHANGED
-	CUtlVector<uint32> m_LocalOffsets;
-	// Probably only works in the debug build, as it has always been empty
-	CUtlString m_ClassName;
-	CUtlString m_FieldName;
-	int32 m_Unk48; // default -1
-	int32 m_nArrayIndex; // default -1
-	ChangeAccessorFieldPathIndex_t m_nPathIndex; // default -1 (can also be -2)
-	int16 m_Unk60; // default 0, if m_LocalOffsets has multiple values, it is set to 1
-};
-COMPILE_TIME_ASSERT(sizeof(NetworkStateChanged_t) == 64);
-
-// Not entirely sure
-struct NetworkStateChanged3_t
-{
-	CUtlVector<uint32> m_Unk0;
-	CUtlVector<uint32> m_Unk24;
-};
-
-struct CEntityPrivateScriptScope
-{
+public:
 	HSCRIPT m_hScope;
 };
 
 class CEntityInstance
 {
 public:
-	virtual void unk001() = 0;
-	virtual void unk002() = 0;
+	virtual const CNetworkSerializerClassInfo* GetSerializerClassInfo() = 0;
+
+	virtual void unk001() = 0; // CDebugHistory override serializes iVersion/Categories/m_DebugLines
+	virtual void unk002() = 0; // CDebugHistory override deserializes iVersion/Categories/m_DebugLines
 
 	virtual ScriptClassDesc_t* GetScriptDesc() = 0;
 	
@@ -77,7 +51,7 @@ public:
 	virtual void AddedToEntityDatabase() = 0;
 	virtual void Spawn( const CEntityKeyValues* pKeyValues ) = 0;
 
-	virtual void unk101() = 0;
+	virtual void unk101() = 0; // No child overrides found
 
 	virtual void PostDataUpdate( /*DataUpdateType_t*/int updateType ) = 0;
 	virtual void OnDataUnchangedInPVS() = 0;
@@ -86,7 +60,7 @@ public:
 	virtual void OnSetDormant( /*EntityDormancyType_t*/int prevDormancyType, /*EntityDormancyType_t*/int newDormancyType ) = 0;
 
 	virtual void* ScriptEntityIO() = 0;
-	virtual int ScriptAcceptInput( const CUtlSymbolLarge &sInputName, CEntityInstance* pActivator, CEntityInstance* pCaller, const variant_t &value, int nOutputID, void* pUnk1, void* pUnk2 ) = 0;
+	virtual int ScriptAcceptInput( const CUtlSymbolLarge &sInputName, CEntityInstance* pActivator, CEntityInstance* pCaller, const variant_t &value, void* pUnk1, void* pUnk2 ) = 0;
 	
 	virtual void PreDataUpdate( /*DataUpdateType_t*/int updateType ) = 0;
 	
@@ -98,37 +72,38 @@ public:
 	virtual void OnSave() = 0;
 	virtual void OnRestore() = 0;
 	
-	virtual void unk201() = 0;
+	virtual void unk201() = 0; // No child overrides found
 
 	virtual int ObjectCaps() = 0;
 	virtual CEntityIndex RequiredEdictIndex() = 0;
 
+	// Include "entity2/entitynetwork.h" to call methods.
 	// marks a field for transmission over the network
 	virtual void NetworkStateChanged( const NetworkStateChanged_t& data ) = 0; // Function replaces old version NetworkStateChanged( uint nOffset, int, ChangeAccessorFieldPathIndex_t PathIndex )
+	virtual void NetworkStateChangedBranch( const CFieldPath& path ) = 0;
+	virtual void NetworkStateChangedRemove( const NetworkStateChangedRemove_t& data ) = 0;
 
-	virtual void NetworkStateChangedBranch( const void* data ) = 0; // Game never call this function during testing
-	virtual void NetworkStateChanged_3( const NetworkStateChanged3_t& data ) = 0;
-
-	// Toggles network update state, if set to false would skip network updates
-	virtual void NetworkUpdateState( bool bUnk ) = 0; // Affects behavior of NetworkStateChanged
+	// Toggles the early-out in CNetworkTransmitComponent::StateChanged; true disables network updates.
+	virtual void NetworkUpdateState( bool bNetworkUpdatesDisabled ) = 0;
 	virtual void NetworkStateChangedLog( const char* pszFieldName, const char* pszInfo ) = 0;
 	virtual bool FullEdictChanged() = 0;
 
-	virtual void unk401() = 0;
-	virtual void unk402() = 0;
+	virtual void InvalidatePolymorphicMetadataHelper() = 0;
+	virtual void unk402() = 0; // nullsub
 
 	virtual ChangeAccessorFieldPathIndex_t AddChangeAccessorPath( const CFieldPath& path ) = 0;
 	virtual void AssignChangeAccessorPathIds() = 0;
-	virtual ChangeAccessorFieldPathIndexInfo_t* GetChangeAccessorPathInfo_1() = 0;
-	virtual ChangeAccessorFieldPathIndexInfo_t* GetChangeAccessorPathInfo_2() = 0;
+	virtual NetworkSharedChangeInfoOverflow_t* GetChangeAccessorPathInfo_1() = 0;
+	virtual NetworkSharedChangeInfoOverflow_t* GetChangeAccessorPathInfo_2() = 0;
 	
-	virtual void unk501() = 0;
-	virtual void unk502() = 0;
+	virtual void unk501() = 0; // No child overrides found
+	virtual bool unk502() = 0; // No child overrides found; base returns false
 
 	virtual void ReloadPrivateScripts() = 0;
 	virtual datamap_t* GetDataDescMap() = 0;
 
-	virtual void unk601() = 0;
+	virtual int unk601() = 0; // Default returns 0; CTestPulseIO overrides
+	virtual void unk602() = 0;
 
 	virtual SchemaMetaInfoHandle_t<CSchemaClassInfo> Schema_DynamicBinding() = 0;
 
@@ -163,12 +138,11 @@ public:
 	}
 
 public:
-	CUtlSymbolLarge m_iszPrivateVScripts; // 0x8
-	CEntityIdentity* m_pEntity; // 0x10
-	CEntityPrivateScriptScope m_hPrivateScope; // 0x18 -
-	CEntityKeyValues* m_pKeyValues; // 0x20
-	HSCRIPT m_hScriptInstance; // 0x28
-	CScriptComponent* m_CScriptComponent; // 0x30
+	CUtlSymbolLarge m_iszPrivateVScripts;
+	CEntityIdentity* m_pEntity;
+	CEntityPrivateScriptScope m_hPrivateScope; 
+	CEntityKeyValues* m_pKeyValues;
+	CScriptComponent* m_CScriptComponent;
 };
 
 // -------------------------------------------------------------------------------------------------- //

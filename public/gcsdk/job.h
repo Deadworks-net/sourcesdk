@@ -12,7 +12,13 @@
 #endif
 
 #include "tier0/memdbgon.h"
+#include "tier0/fasttimer.h"
 #include "tier1/functors.h"
+#include "tier1/utllinkedlist.h"
+#include "tier1/utlleanvector.h"
+#include "vstdlib/coroutine.h"
+#include "msgbase.h"
+#include "msgprotobuf.h"
 #include "workthreadpool.h"
 
 class GCConVar;
@@ -353,7 +359,7 @@ private:
 	friend class CLock;
 
 	// used to store the memory allocation stack
-	CUtlMemory< unsigned char > m_memAllocStack;
+	CUtlLeanVector< unsigned char > m_memAllocStack;
 };
 
 

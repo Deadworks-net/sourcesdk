@@ -10,6 +10,7 @@
 #define THREADTOOLS_H
 
 #include <limits.h>
+#include <shared_mutex>
 
 #include "basetypes.h"
 #include "tier0/platform.h"
@@ -89,10 +90,12 @@ PLATFORM_INTERFACE bool ReleaseThreadHandle( ThreadHandle_t );
 
 //-----------------------------------------------------------------------------
 
+// Deadlock: tier0 exports these with non-const pointers (?ThreadAtomicNotifyOne@@YAXPEAI@Z);
+// CS2 upstream declares `const uint32 *`, which does not link against Deadlock's tier0.lib.
 PLATFORM_OVERLOAD void ThreadAtomicNotifyOne( uint32 *addr );
 PLATFORM_OVERLOAD void ThreadAtomicNotifyN( uint32 *addr, uint32 n );
 PLATFORM_OVERLOAD void ThreadAtomicNotifyAll( uint32 *addr );
-PLATFORM_OVERLOAD void ThreadAtomicWait( uint32 *addr, uint32 ms );
+PLATFORM_OVERLOAD void ThreadAtomicWait( uint32 *addr, uint32 ms ); // Deadlock: ?ThreadAtomicWait@@YAXPEAII@Z (non-volatile)
 
 PLATFORM_INTERFACE void ThreadSleep(unsigned duration = 0);
 PLATFORM_INTERFACE void ThreadNanoSleep(unsigned ns);
@@ -1075,32 +1078,16 @@ private:
 //
 //-----------------------------------------------------------------------------
 
-#ifdef PLATFORM_WINDOWS
-class ALIGN8 CThreadSpinRWLock
-#else
-class ALIGN16 CThreadSpinRWLock
-#endif
+class CThreadSpinRWLock
 {
 public:
-	CThreadSpinRWLock( const char* pDebugName = NULL )
-	{
-#ifdef PLATFORM_WINDOWS
-		COMPILE_TIME_ASSERT( sizeof( LockInfo_t ) == sizeof( int64 ) ); Assert( (intp)this % 8 == 0 );
-#else
-		COMPILE_TIME_ASSERT( sizeof( LockInfo_t ) == sizeof( int128 ) ); Assert( (intp)this % 16 == 0 );
-#endif
-		memset( (void*)this, 0, sizeof( *this ) );
+	bool TryLockForWrite( const char *pFileName = NULL, int nLine = -1 ) { return m_mutex.try_lock(); }
+	bool TryLockForRead( const char *pFileName = NULL, int nLine = -1 ) { return m_mutex.try_lock_shared(); }
 
-		//m_pDebugName = pDebugName;
-	}
-
-	bool TryLockForWrite( const char *pFileName = NULL, int nLine = -1 );
-	bool TryLockForRead( const char *pFileName = NULL, int nLine = -1 );
-
-	PLATFORM_CLASS void LockForRead( const char *pFileName = NULL, int nLine = -1 );
-	PLATFORM_CLASS void UnlockRead( const char *pFileName = NULL, int nLine = -1 );
-	void LockForWrite( const char *pFileName = NULL, int nLine = -1 );
-	PLATFORM_CLASS void UnlockWrite( const char *pFileName = NULL, int nLine = -1 );
+	void LockForRead( const char *pFileName = NULL, int nLine = -1 ) { m_mutex.lock_shared(); }
+	void UnlockRead( const char *pFileName = NULL, int nLine = -1 ) { m_mutex.unlock_shared(); }
+	void LockForWrite( const char *pFileName = NULL, int nLine = -1 ) { m_mutex.lock(); }
+	void UnlockWrite( const char *pFileName = NULL, int nLine = -1 ) { m_mutex.unlock(); }
 
 	bool TryLockForWrite( const char *pFileName = NULL, int nLine = -1 ) const { return const_cast<CThreadSpinRWLock *>(this)->TryLockForWrite( pFileName, nLine ); }
 	bool TryLockForRead( const char *pFileName = NULL, int nLine = -1 ) const { return const_cast<CThreadSpinRWLock *>(this)->TryLockForRead( pFileName, nLine ); }
@@ -1111,28 +1098,8 @@ public:
 	void UnlockWrite( const char *pFileName = NULL, int nLine = -1 ) const { const_cast<CThreadSpinRWLock *>(this)->UnlockWrite( pFileName, nLine ); }
 
 private:
-	struct LockInfo_t
-	{
-		ThreadId_t	m_writerId;
-#ifdef PLATFORM_WINDOWS
-		int32		m_nReaders;
-#else
-		int64		m_nReaders;
-#endif
-	};
-
-	bool AssignIf( const LockInfo_t &newValue, const LockInfo_t &comperand );
-	bool TryLockForWrite( const char *pFileName, int nLine, const ThreadId_t threadId );
-	PLATFORM_CLASS void SpinLockForWrite( const char *pFileName, int nLine, const ThreadId_t threadId );
-
-	volatile LockInfo_t m_lockInfo;
-	CInterlockedInt m_nWriters;
-	const char* m_pDebugName;
-#ifdef PLATFORM_WINDOWS
-} ALIGN8_POST;
-#elif PLATFORM_POSIX
-} ALIGN16_POST;
-#endif
+	std::shared_mutex m_mutex;
+};
 
 class PLATFORM_CLASS CThreadRWLock_FastRead
 {
