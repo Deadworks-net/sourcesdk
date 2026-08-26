@@ -175,8 +175,6 @@ public:
 	virtual void		DumpNetStats( void *pNetStatData, const std::function< void ( const char * )> &func ) = 0;
 	virtual void		unk_30() = 0;
 
-	virtual uint32		GetLongFrameCount() = 0;
-
 	// Tell engine to change level ( "changelevel s1\n" or "changelevel2 s1 s2\n" )
 	virtual void		ChangeLevel( const char *s1, const char *s2 ) = 0;
 
@@ -212,6 +210,7 @@ public:
 	virtual void		ServerCommand( const char *str ) = 0;
 	// Issue the specified command to the specified client (mimics that client typing the command at the console).
 	virtual void		ClientCommand( CPlayerSlot nSlot, const char *szFmt, ... ) FMTFUNCTION( 3, 4 ) = 0;
+	virtual void		LightStyle( int style, const char *val ) = 0;
 
 	// Print szMsg to the client console.
 	virtual void		ClientPrintf( CPlayerSlot nSlot, const char *szMsg ) = 0;
