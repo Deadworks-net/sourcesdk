@@ -269,6 +269,10 @@ struct datamap_t
 #endif // _DEBUG
 };
 
+// Deadlock: verified against the server's datamaps in 6711.
+COMPILE_TIME_ASSERT( sizeof( typedescription_t ) == 0x38 );
+COMPILE_TIME_ASSERT( offsetof( datamap_t, baseMap ) == 0x18 );
+
 
 //-----------------------------------------------------------------------------
 //
