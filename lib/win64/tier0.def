@@ -69,6 +69,7 @@ EXPORTS
     ??0CStringPool_CI@@QEAA@XZ
     ??0CTSListBase@@QEAA@XZ
     ??0CThread@@QEAA@XZ
+    ??0CThreadBackgroundWorkGate@@QEAA@XZ
     ??0CThreadBarrier@@QEAA@I@Z
     ??0CThreadCrossProcessMutex@@QEAA@PEBD_N@Z
     ??0CThreadEvent@@QEAA@PEAX@Z
@@ -152,6 +153,7 @@ EXPORTS
     ??1CStringPool_CI@@QEAA@XZ
     ??1CTSListBase@@QEAA@XZ
     ??1CThread@@UEAA@XZ
+    ??1CThreadBackgroundWorkGate@@QEAA@XZ
     ??1CThreadBarrier@@QEAA@XZ
     ??1CThreadCrossProcessMutex@@QEAA@XZ
     ??1CThreadEvent@@QEAA@XZ
@@ -284,6 +286,7 @@ EXPORTS
     ?Acquire@CUtlString@@QEAAXPEAVCBufferString@@_N@Z
     ?AcquireLock@CAtomicMutex@@AEAAXI@Z
     ?ActivateByteSwapping@CUtlBuffer@@QEAAX_N@Z
+    ?ActivePoolHighWatermark@CPoolAllocator@@QEBAIXZ
     ?AddBudgetGroupName@CVProfile@@KAHPEBDH@Z
     ?AddFileToChangeList@CDirWatcher@@AEAAXPEBD@Z
     ?AddFloat@KeyValues@@QEAAXPEBDM@Z
@@ -337,8 +340,8 @@ EXPORTS
     ?AssertValid@CCircularBuffer@@IEAAXXZ
     ?Assert_ConditionFailed@@YA_NAEBU_AssertCompileTimeConstantStruct_t@@@Z
     ?Assert_ConditionFailed@@YA_NAEBU_AssertCompileTimeConstantStruct_t@@PEBDZZ
-    ?Assert_ConditionFailed@@YA_NPEBDI00W4AssertionType_t@@I0ZZ
-    ?Assert_ConditionFailed@@YA_NPEBDI00W4AssertionType_t@@I@Z
+    ?Assert_ConditionFailed_Fatal@@YAXAEBU_AssertCompileTimeConstantStruct_t@@@Z
+    ?Assert_ConditionFailed_Fatal@@YAXAEBU_AssertCompileTimeConstantStruct_t@@PEBDZZ
     ?AssignNextTimespanId@CVProfile@@QEAAHXZ
     ?AssumeMemory@CUtlBuffer@@QEAAXPEAXHHW4BufferFlags_t@1@@Z
     ?AtRoot@CVProfile@@QEBA_NXZ
@@ -432,6 +435,7 @@ EXPORTS
     ?Diff@CVirtualMemorySnapshot@@QEAAXPEBV1@0@Z
     ?DirName@CUtlString@@QEBA?AV1@XZ
     ?DisableVTuneGroup@CVProfile@@QEAAXXZ
+    ?DoExecuteInternal@CThreadedJobWithDependencies@@AEAAXXZ
     ?DoWait@CAtomicSemaphore@@AEAAXXZ
     ?DoesHaveAnyReadLocks@?$CEventRWLock_Debuggable@$00@@AEAA_NAEAVCEventListNode@@@Z
     ?DoesMatchString@CFilterString@@QEBA_NPEBD@Z
@@ -454,6 +458,7 @@ EXPORTS
     ?EncounteredComplexReadLockOperation@CThreadRWLock_FastRead@@IEAA_NI_NPEBDH@Z
     ?EndItem@IFormatOutputStream@@UEAAXXZ
     ?EndProcessingCommands@CCommandBuffer@@QEAAXXZ
+    ?EndsWith@CBufferString@@QEBA_NAEBV1@@Z
     ?EndsWith@CBufferString@@QEBA_NPEBD@Z
     ?EndsWith_FastCaseInsensitive@CBufferString@@QEBA_NPEBD@Z
     ?EnforceTypeAndSize@CFormatStringElement@@QEAAXPEBD0@Z
@@ -468,9 +473,9 @@ EXPORTS
     ?EnsureReady@CImageHlpFunctionsLoader@@AEAAXXZ
     ?EnsureReady@CPSApiFunctionsLoader@@AEAAXXZ
     ?EnsureTrailingSlash@CBufferString@@QEAAPEBDD_N@Z
+    ?EnterNodeScopeBackground@CVProfile@@KAXPEAVCVProfNode@@@Z
     ?EnterScope@CVProfNode@@QEAAXXZ
-    ?EnterScope@CVProfile@@QEAAXPEBD_NAEAUVProfBudgetGroupCallSite@@AEBVCUtlSourceLocation@@@Z
-    ?EnterScopeChecked@CVProfile@@QEAAXPEBD_NAEAUVProfBudgetGroupCallSite@@AEBVCUtlSourceLocation@@@Z
+    ?EnterScopeBackgroundThread@CVProfile@@SAP6AXXZPEBDAEAUVProfBudgetGroupCallSite@@AEBVCUtlSourceLocation@@@Z
     ?EnterScopeInternal@?$VProfScopeHelper@$00$00@@SAP6AXXZPEBDAEBVCUtlSourceLocation@@@Z
     ?EnterScopeInternal@?$VProfScopeHelper@$00$0A@@@SAP6AXXZPEBDAEBVCUtlSourceLocation@@@Z
     ?EnterScopeInternal@?$VProfScopeHelper@$01$00@@SAP6AXXZPEBDAEBVCUtlSourceLocation@@@Z
@@ -491,15 +496,19 @@ EXPORTS
     ?EnterScopeInternalBudgetFlags@?$VProfScopeHelper@$03$0A@@@SAP6AXXZPEBDAEAUVProfBudgetGroupCallSite@@AEBVCUtlSourceLocation@@@Z
     ?EnterScopeInternalBudgetFlags@?$VProfScopeHelper@$0A@$00@@SAP6AXXZPEBDAEAUVProfBudgetGroupCallSite@@AEBVCUtlSourceLocation@@@Z
     ?EnterScopeInternalBudgetFlags@?$VProfScopeHelper@$0A@$0A@@@SAP6AXXZPEBDAEAUVProfBudgetGroupCallSite@@AEBVCUtlSourceLocation@@@Z
-    ?EnterScopeNode@CVProfile@@QEAAXPEAVCVProfNode@@@Z
+    ?EnterScopeNodeTargetThread@CVProfile@@QEAAXPEAVCVProfNode@@@Z
+    ?EnterScopeTargetThread@CVProfile@@QEAAXPEBD_NAEAUVProfBudgetGroupCallSite@@AEBVCUtlSourceLocation@@@Z
+    ?EnterScopeTargetThreadChecked@CVProfile@@QEAAXPEBD_NAEAUVProfBudgetGroupCallSite@@AEBVCUtlSourceLocation@@@Z
     ?EnumerateEncodingIndices@CVirtualMachineCallStackTranslationEncoder@@QEAAXP6A_NPEAV1@IPEBD1IPEAX@Z2@Z
     ?EnumerateLoadedModules64_@CDbgHelpFunctionsLoader@@QEAAHPEAXP6AHPEB_W_KK0@Z0@Z
     ?EstimateBytesUsed@CFiber@@QEBA_K_K@Z
     ?Evaluate@CExpressionEvaluator@@QEAA_NAEA_NPEBDP6A_N1PEAX@ZP6AX12@Z22@Z
     ?EvaluateAsUnmarkedSymbols@CExpressionEvaluator@@QEAA_NAEA_NPEBDP6A_N1PEAX@ZP6AX12@Z22@Z
+    ?ExitNodeScopeBackground@CVProfile@@KA_NPEAVCVProfNode@@@Z
     ?ExitScope@CVProfNode@@QEAA_NXZ
-    ?ExitScope@CVProfile@@QEAAXXZ
-    ?ExitScopeChecked@CVProfile@@QEAAXXZ
+    ?ExitScopeBackgroundThread@CVProfile@@SAXXZ
+    ?ExitScopeTargetThread@CVProfile@@QEAAXXZ
+    ?ExitScopeTargetThreadChecked@CVProfile@@QEAAXXZ
     ?ExtendPath@CBufferString@@QEAAPEBDPEBDD_N@Z
     ?ExtractFileBase@CBufferString@@QEAAPEBDPEBD_N@Z
     ?ExtractFileExtension@CBufferString@@QEAAPEBDPEBD@Z
@@ -553,6 +562,7 @@ EXPORTS
     ?FioCreatePipe@@YAHPEAPEAX0H@Z
     ?FioCreateSymbolicLink@@YAHPEBD0_N@Z
     ?FioDuplicate@@YAHPEAX_NPEAPEAX@Z
+    ?FioEnumerateAbsPathsInDirRecursive@@YA_NPEBDPEAV?$CUtlHashtable@VCUtlString@@Uempty_t@@U?$DefaultHashFunctor@VCUtlString@@@@U?$DefaultEqualFunctor@VCUtlString@@@@V?$CUtlLeanVector@V?$CUtlHashtableEntry@VCUtlString@@Uempty_t@@@@HVCMemAllocAllocator@@@@$00@@@Z
     ?FioFileTimeToTimeT@@YA_J_K@Z
     ?FioFindFileInDirCaseInsensitive@@YAPEBDPEBDPEAVCBufferString@@_N@Z
     ?FioFlush@@YAHPEAX@Z
@@ -642,6 +652,9 @@ EXPORTS
     ?GetAddressAfterLastRegion@CVirtualMemorySnapshot@@QEBA_K_K@Z
     ?GetAllocChars@CBufferString@@KAHHH@Z
     ?GetAvailableBufferSize@CMiniDumpComment@@QEBAHXZ
+    ?GetBackgroundRoot@CVProfile@@QEAAPEAVCVProfNode@@XZ
+    ?GetBackgroundRootMutex@CVProfile@@QEAAAEAVCAtomicMutex@@XZ
+    ?GetBackgroundRootNoCreate@CVProfile@@QEBAPEAVCVProfNode@@XZ
     ?GetBaseFilename@CUtlString@@QEBA?AV1@XZ
     ?GetBudgetGroupColor@CVProfile@@SAXHAEAH000@Z
     ?GetBudgetGroupFlags@CVProfile@@SAHH@Z
@@ -695,7 +708,6 @@ EXPORTS
     ?GetGameInfoFloat@@YAMPEBDM@Z
     ?GetGameInfoInt@@YAHPEBDH@Z
     ?GetGameInfoKey@@YAPEAVKeyValues@@PEBD@Z
-    ?GetGameInfoPlatformSpecificBool@@YA_NPEBD_N@Z
     ?GetGameInfoString@@YAPEBDPEBD0PEAD_K@Z
     ?GetGameInfoUint64@@YA_KPEBD_K@Z
     ?GetHandle@CThreadSyncObject@@QEBAPEAXXZ
@@ -710,6 +722,7 @@ EXPORTS
     ?GetIndexBitShift@CVirtualMachineCallStackTranslationEncoder@@QEAAIXZ
     ?GetInsertPtr@CBufferString@@QEAAPEADHH_NPEAH@Z
     ?GetInt@KeyValues@@QEBAHPEBDH@Z
+    ?GetKeyValuesSystem@KeyValues@@QEBAPEAVIKeyValuesSystem@@XZ
     ?GetLargestUnmappedRegion@CVirtualMemorySnapshot@@QEBAXPEA_K0_K@Z
     ?GetLine@CUtlBuffer@@QEAAXPEADH@Z
     ?GetLine@CUtlBuffer@@QEAAXPEAVCBufferString@@@Z
@@ -772,7 +785,8 @@ EXPORTS
     ?GetTotalWallClockSecondsSampled@CVProfile@@QEAANXZ
     ?GetType@netadr_t@@QEBA?AW4netadrtype_t@@XZ
     ?GetUint64@KeyValues@@QEBA_KPEBD_K@Z
-    ?GetUniqueNodeID@CVProfNode@@IEBAHXZ
+    ?GetUniqueNodeCount@CVProfNode@@SAHXZ
+    ?GetUniqueNodeID@CVProfNode@@QEBAHXZ
     ?GetUpTo@CUtlBuffer@@QEAAHPEAXH@Z
     ?GetVChild@CVProfNode@@QEAAPEAV1@XZ
     ?GetVChild@CVProfNode@@QEBAPEBV1@XZ
@@ -845,7 +859,7 @@ EXPORTS
     ?Internal_SetFromString@CKeyValues_Data@@IEAAXW4types_t@1@PEBD@Z
     ?Internal_SetHasEscapeSequences@CKeyValues_Data@@IEAAX_N@Z
     ?Internal_SetInt@CKeyValues_Data@@IEAAXH@Z
-    ?Internal_SetName@CKeyValues_Data@@IEAAXPEBD@Z
+    ?Internal_SetName@CKeyValues_Data@@IEAA_NPEBD@Z
     ?Internal_SetNameFrom@CKeyValues_Data@@IEAAXAEBV1@@Z
     ?Internal_SetPtr@CKeyValues_Data@@IEAAXPEAX@Z
     ?Internal_SetString@CKeyValues_Data@@IEAAXPEBD@Z
@@ -884,6 +898,7 @@ EXPORTS
     ?IsNotPlatModule@CModuleListSnapshot@@SA_NPEBDPEBX_K@Z
     ?IsParticleSystemBehaviorVersionDeprecated@@YA_NPEAVKeyValues3@@PEAH@Z
     ?IsProcessingCommands@CCommandBuffer@@QEAA_NXZ
+    ?IsProfilingAllThreads@CVProfile@@QEBA_NXZ
     ?IsReadyToResume@CFiber@@QEAA_NXZ
     ?IsReservedAdr@netadr_t@@QEBA_NXZ
     ?IsRunningInThreadMemory@CFiber@@SA_NXZ
@@ -956,8 +971,9 @@ EXPORTS
     ?LooksLikeKV3BinaryData@@YA_NPEBXHPEAUKV3ID_t@@@Z
     ?LooksLikeKV3TextData@@YA_NPEBXHPEAUKV3ID_t@@PEADH@Z
     ?LooksLikeOldSchemaText@@YA_NPEBXHPEAUKV3ID_t@@@Z
-    ?Make@CUtlStringToken@@SA?AV1@PEBD_N@Z
+    ?Make@CUtlStringToken@@SA?AV1@PEBD@Z
     ?MakeAbsolutePath@CBufferString@@QEAAPEBDPEBD0@Z
+    ?MakeCopy@KeyValues@@QEBAPEAV1@PEAVIKeyValuesSystem@@@Z
     ?MakeCopy@KeyValues@@QEBAPEAV1@XZ
     ?MakeFixedAbsolutePath@CBufferString@@QEAAPEBDPEBD0D@Z
     ?MakeRelativePath@CBufferString@@QEAAPEBDPEBD0_N@Z
@@ -969,6 +985,8 @@ EXPORTS
     ?MaybeCommitTo@CMemoryStack@@AEAA_NPEAE@Z
     ?MemoryBegin@CUtlMemoryArena@@QEBAPEBEXZ
     ?MemoryEnd@CUtlMemoryArena@@QEBAPEBEXZ
+    ?MergeBackgroundNodes_R@CVProfile@@KAXPEAVCVProfNode@@0@Z
+    ?MergeBackgroundTrees@CVProfile@@QEAAXXZ
     ?MergeFrom@KeyValues@@QEAAXPEBV1@W4MergeKeyValuesOp_t@1@@Z
     ?MergeFromTemporary@KeyValues@@QEBAPEAVCTemporaryKeyValues@@PEBV1@W4MergeKeyValuesOp_t@1@@Z
     ?MoveFrom@CBufferString@@QEAAXAEAV1@@Z
@@ -982,6 +1000,8 @@ EXPORTS
     ?NumColumns@CGridStringPrinter@@QEBAHXZ
     ?NumFramesSampled@CVProfile@@QEBAHXZ
     ?NumRows@CGridStringPrinter@@QEBAHXZ
+    ?OnBeginBackgroundWork@CThreadBackgroundWorkGate@@QEAAXXZ
+    ?OnEndBackgroundWork@CThreadBackgroundWorkGate@@QEAAXXZ
     ?OnExceptionCaught@CMiniDumpComment@@QEAAXXZ
     ?OnExit@CThread@@MEAAXXZ
     ?OnGetOverflow@CUtlBuffer@@IEAA_NH@Z
@@ -1002,6 +1022,8 @@ EXPORTS
     ?PathJoin@CUtlString@@SA?AV1@PEBD0@Z
     ?Pause@CVProfNode@@QEAAXXZ
     ?Pause@CVProfile@@QEAAXXZ
+    ?PauseRequested@CThreadBackgroundWorkGate@@QEBA_NXZ
+    ?PauseWork@CThreadBackgroundWorkGate@@QEAAXXZ
     ?Peek@CCircularBuffer@@QEAAHPEAXH@Z
     ?PeekDelimitedStringLength@CUtlBuffer@@QEAAHPEAVCUtlCharConversion@@_N@Z
     ?PeekGet@CUtlBuffer@@QEAAPEBXHH@Z
@@ -1087,6 +1109,7 @@ EXPORTS
     ?Release@CThreadSemaphore@@QEAA_NHPEAH@Z
     ?ReleaseOwnerThread@CThreadSwapTarget@@QEAAXXZ
     ?ReleaseParentStackReferences@CStackTop_ReferenceParentStack@@QEAAXXZ
+    ?ReleaseUpstreamDependency@CThreadedDependentJob@@QEAAXXZ
     ?Relinquish@CBufferString@@QEAAPEADW4EAllocationOption_t@1@@Z
     ?RemainingCapacity@CCharBufferFormatOutputStream@@UEBAHXZ
     ?RemainingCapacity@IFormatOutputStream@@UEBAHXZ
@@ -1111,6 +1134,7 @@ EXPORTS
     ?RemoveTrailingCharacters@CMiniDumpComment@@QEAA_ND@Z
     ?RemoveWhitespace@CBufferString@@QEAAHXZ
     ?Replace@CBufferString@@QEAAHDD@Z
+    ?Replace@CBufferString@@QEAAHDPEBD@Z
     ?Replace@CBufferString@@QEAAHPEBD0_N@Z
     ?Replace@CUtlString@@QEBA?AV1@DD@Z
     ?Replace@CUtlString@@QEBA?AV1@DPEBD@Z
@@ -1156,6 +1180,7 @@ EXPORTS
     ?Resume@CVProfNode@@QEAAXXZ
     ?Resume@CVProfile@@QEAAXXZ
     ?ResumeJob@CFiber@@QEAA_NPEAX@Z
+    ?ResumeWork@CThreadBackgroundWorkGate@@QEAAXXZ
     ?ReverseChars@CBufferString@@QEAAPEBDHH@Z
     ?Right@CUtlString@@QEBA?AV1@H@Z
     ?Run@CRunProcess@@QEAAHPEBDH@Z
@@ -1244,6 +1269,7 @@ EXPORTS
     ?SetPageSize@CUtlSymbolTable@@QEAAXI@Z
     ?SetPort@netadr_t@@QEAAXG@Z
     ?SetPriority@CThread@@QEAA_NW4ThreadPriorityEnum_t@@@Z
+    ?SetProfileAllThreads@CVProfile@@QEAAX_N@Z
     ?SetPtr@CBufferString@@QEAAXPEADHH_N1@Z
     ?SetPtr@KeyValues@@QEAAXPEBDPEAX@Z
     ?SetRequiredFlags@CCommandBuffer@@QEAA_K_K@Z
@@ -1284,7 +1310,9 @@ EXPORTS
     ?SimpleSpew@CGridStringPrinter@@QEBAXHPEBD@Z
     ?SimpleSpewColor@CGridStringPrinter@@QEBAXHAEBVColor@@PEBD@Z
     ?Sleep@CThread@@SAXI@Z
+    ?Slice@CBufferString@@QEBA?AV1@HH@Z
     ?Slice@CUtlString@@QEBA?AV1@HH@Z
+    ?Spew@CGridStringPrinter@@QEBAXHPEBD@Z
     ?SpewStats@CUtlLRUCacheBase@@SAXXZ
     ?SpewStrings@CCountedStringPool_CI@@QEBAXXZ
     ?SpewStrings@CUtlFilenameSymbolTable@@QEAAXXZ
@@ -1296,6 +1324,7 @@ EXPORTS
     ?StackWalkEx_@CDbgHelpFunctionsLoader@@QEAAHKPEAX0PEAU_tagSTACKFRAME_EX@@0P6AH0_K0KPEAK@ZP6APEAX02@ZP6A_K02@ZP6A_K00PEAU_tagADDRESS64@@@ZK@Z
     ?Start@CThread@@UEAA_NIW4ThreadPriorityEnum_t@@@Z
     ?Start@CVProfile@@QEAAXXZ
+    ?StartsWith@CBufferString@@QEBA_NAEBV1@@Z
     ?StartsWith@CBufferString@@QEBA_NPEBD@Z
     ?StartsWith_FastCaseInsensitive@CBufferString@@QEBA_NPEBD@Z
     ?Stop@CDirIterator@@QEAAXXZ
@@ -1318,11 +1347,9 @@ EXPORTS
     ?SumTimes@CVProfile@@IEAAXPEBVCVProfNode@@HAEAUCVProfSummingContext@@@Z
     ?SupportsInlineContext_@CDbgHelpFunctionsLoader@@QEAA_NXZ
     ?Suspend@CThread@@QEAAIXZ
-    ?Swap@CUtlBuffer@@QEAAXAEAV1@_N@Z
+    ?Swap@CUtlBuffer@@QEAAXAEAV1@@Z
     ?Swap@CUtlBuffer@@QEAAXAEAV?$CUtlLeanVector@EHVCMemAllocAllocator@@@@@Z
     ?Swap@CUtlString@@QEAAXAEAV1@@Z
-    ?SwapFieldToTargetEndian@CByteswap@@QEAAXPEAX0PEAUtypedescription_t@@@Z
-    ?SwapFieldsToTargetEndian@CByteswap@@QEAAXPEAX0PEAUdatamap_t@@@Z
     ?SwapSubKey@KeyValues@@QEAAXPEAV1@0@Z
     ?SymCleanup_@CDbgHelpFunctionsLoader@@QEAAHPEAX@Z
     ?SymEnumSourceFiles_@CDbgHelpFunctionsLoader@@QEAAHPEAX_KPEB_WP6AHPEAU_SOURCEFILEW@@0@Z0@Z
@@ -1362,10 +1389,10 @@ EXPORTS
     ?Terminate@CThread@@QEAA_NH@Z
     ?Terminate@IFormatOutputStream@@UEAAXXZ
     ?TestMarkerAgainstCapturedStackIndex@CCallStackMarkerBase@@QEBA_NPEBQEBXHH@Z
-    ?ThreadAtomicNotifyAll@@YAXPEAI@Z
-    ?ThreadAtomicNotifyN@@YAXPEAII@Z
-    ?ThreadAtomicNotifyOne@@YAXPEAI@Z
-    ?ThreadAtomicWait@@YAXPEAII@Z
+    ?ThreadAtomicNotifyAll@@YAXPEBI@Z
+    ?ThreadAtomicNotifyN@@YAXPEBII@Z
+    ?ThreadAtomicNotifyOne@@YAXPEBI@Z
+    ?ThreadAtomicWait@@YAXPECII@Z
     ?ThreadMultiWaitObjectSetCreate@@YAPEAUThreadMultiWaitObjectSet_t@@PEBQEAXPEBUThreadMultiWaitExtra_t@@H@Z
     ?ThreadProc@CThread@@KA_KPEAX@Z
     ?ToLowerFast@CBufferString@@QEAAXH@Z
@@ -1466,8 +1493,6 @@ EXPORTS
     ?V_UnicodeLength@@YAHPEBI@Z
     ?V_UnicodeLength@@YAHPEB_W@Z
     ?V_UnicodeRepair@@YAHPEADW4EStringConvertErrorPolicy@@@Z
-    ?V_UnicodeRepair@@YAHPEAIW4EStringConvertErrorPolicy@@@Z
-    ?V_UnicodeRepair@@YAHPEA_WW4EStringConvertErrorPolicy@@@Z
     ?V_UnicodeValidate@@YA_NPEBD@Z
     ?V_UnicodeValidate@@YA_NPEBI@Z
     ?V_UnicodeValidate@@YA_NPEB_W@Z
@@ -1481,6 +1506,7 @@ EXPORTS
     ?ValidateOperand@CVariableBitStringBase@@IEBAXAEBV1@@Z
     ?ValidateStorage@CEnvironmentBlock@@IEAAXXZ
     ?Wait@CThreadSyncObject@@QEAA_NI@Z
+    ?Wait@CThreadedDependentJob@@QEAAXXZ
     ?WaitForCreateComplete@CThread@@MEAA_NPEAVCThreadEvent@@@Z
     ?WaitForJobCompletion@CFiber@@QEAAXAEAVCEventListNode@@@Z
     ?WaitForMultiple@CThreadEvent@@SAIHPEAPEAV1@_NI@Z
@@ -1502,7 +1528,7 @@ EXPORTS
     ?_FooHacked_DontEverCallMe@Hack_WatchWindow_t@@SAPEBU1@PEBX@Z
     ?base64_decode@@YA_NAEAVCUtlBuffer@@AEBV1@@Z
     ?base64_encode@@YA_NAEAVCUtlBuffer@@AEBV1@@Z
-    ?s_iCurrentUniqueNodeID@CVProfNode@@1HA
+    ?s_iCurrentUniqueNodeID@CVProfNode@@1V?$CInterlockedIntT@H$03@@A
     ApplyDiffs
     AssertsGetCount
     AssertsMarkFrame
@@ -1524,8 +1550,10 @@ EXPORTS
     ConvertKV3Format
     CopyDependencyToAlternateLocation
     CopyUniqueId
+    Coroutine_Cancel
     Coroutine_Continue
     Coroutine_Create
+    Coroutine_IsActive
     Coroutine_YieldToMain
     CreateCommandLine
     CreateDisposableKeyValuesSystem
@@ -1549,9 +1577,11 @@ EXPORTS
     FindDiffsForLargeFiles
     FindDiffsLowMemory
     FindOrCreateQuantizedFloatEncoder
+    FindOrCreateQuantizedFloatEncoderAlias
     FindRegisteredGlobalObjectInternal
     FioGetFileType
     FreeCommandLine
+    GenerateDefaultRandomSeed
     GenerateHashFromUniqueId
     GetActiveAssertDialogHwnd
     GetAddressInlineCallData
@@ -1575,6 +1605,8 @@ EXPORTS
     GetNewMiniDumpFileName
     GetPerfSortedLogicalProcessors
     GetPlatformName
+    GetQuantizedFloatEncoderAlias
+    GetQuantizedFloatEncoderAliasCount
     GetQuantizedFloatEncoderByReg
     GetQuantizedFloatEncoderNameByReg
     GetQuantizedFloatEncodersSharingReg
@@ -1668,8 +1700,10 @@ EXPORTS
     MD5_ProcessSingleBuffer
     MD5_PseudoRandom
     MailMiniDump
+    MemAlloc_AllocAlignedFunc
     MemAlloc_AllocFunc
     MemAlloc_CallocFunc
+    MemAlloc_FreeAlignedFunc
     MemAlloc_FreeFunc
     MemAlloc_GetAllocAttributesFunc
     MemAlloc_GetSizeFunc
@@ -1691,6 +1725,7 @@ EXPORTS
     MinidumpUserStreamInfoSetHeader
     Msg
     OSTypesAreCompatible
+    OverrideQuantizedFloatEncoderAlias
     ParallelForSharedCode
     PlatC_ReadFileToMemory
     Plat_AlertUser
@@ -1719,6 +1754,7 @@ EXPORTS
     Plat_DebugPrintV
     Plat_DebugString
     Plat_DebugString_Buffered
+    Plat_DemangleRawTypeName
     Plat_DesktopNotify
     Plat_DestroyGameInstanceMutex
     Plat_DestroyWindow
@@ -1754,7 +1790,6 @@ EXPORTS
     Plat_GetCurrentDirectory
     Plat_GetCurrentDisplayMode
     Plat_GetCurrentFrame
-    Plat_GetCurrentHibernationState
     Plat_GetCurrentRSS
     Plat_GetDPI
     Plat_GetDebugMonitor
@@ -1772,7 +1807,6 @@ EXPORTS
     Plat_GetLastGameInstanceMutex
     Plat_GetLoadedModules
     Plat_GetLocalTime
-    Plat_GetMasterMobileEventHandler
     Plat_GetMemPageSize
     Plat_GetMiniDumpErrorString
     Plat_GetModuleAddressInformation
@@ -1800,7 +1834,6 @@ EXPORTS
     Plat_GetRawCallStack
     Plat_GetRegisteredModules
     Plat_GetShellWindow
-    Plat_GetSteamLoginWithAccessCode
     Plat_GetSystemLoad
     Plat_GetTempDirectory
     Plat_GetThisProcessStdioRedirectFlags
@@ -1813,20 +1846,11 @@ EXPORTS
     Plat_GetWindowClientSizeOsSpecific
     Plat_GetWindowContentsScale
     Plat_GetWindowMonitorIndex
-    Plat_GetWindowSafeAreaInsets
     Plat_GlobalMemoryStatus
     Plat_HasClipboardText
     Plat_HasEnteredFatalState
     Plat_HasEnv
     Plat_HookSpecialThread
-    Plat_IAPConsumePurchase
-    Plat_IAPGetPricingAsync
-    Plat_IAPPurchaseSku
-    Plat_IAPQueryExistingPurchases
-    Plat_IAPSetHandler
-    Plat_IAPUpdateConsumedStatus
-    Plat_IAPUpdatePricing
-    Plat_IAPUpdatePurchaseStatus
     Plat_IgnoreContentAsserts
     Plat_InitializeCOM
     Plat_InstallControlCHandler
@@ -1866,13 +1890,13 @@ EXPORTS
     Plat_MilliSecTickDiff
     Plat_MilliSecTickDiffF
     Plat_MinimizeWindow
-    Plat_NeedsLowFragmentation
     Plat_NonFatalErrorFunc
+    Plat_NotifyModuleLoad
     Plat_NotifyOSAppIsNotHung
     Plat_OnExecutableExitingMain
+    Plat_OpenURL
     Plat_OsSpecificHandleToPlatWindow
     Plat_Printf
-    Plat_QueueSteamLoginWithAccessCode
     Plat_ReconfigureWindow
     Plat_RefreshDPI
     Plat_RegisterModule
@@ -1884,7 +1908,6 @@ EXPORTS
     Plat_RegistryWriteString
     Plat_RelativeTickFrequency
     Plat_RelativeTicks
-    Plat_ReleaseMouseCapture
     Plat_RemoveDirectory
     Plat_RemoveDirectoryTree
     Plat_RemoveEnv
@@ -1904,6 +1927,7 @@ EXPORTS
     Plat_SetActiveWindow
     Plat_SetActiveWindowOsSpecific
     Plat_SetCPUTicksAreReliable
+    Plat_SetClipboardData
     Plat_SetClipboardText
     Plat_SetCurrentDirectory
     Plat_SetCurrentFrame
@@ -1914,11 +1938,9 @@ EXPORTS
     Plat_SetFileReadOnly
     Plat_SetForegroundWindow
     Plat_SetFullscreenMinimizeOnFocusLoss
-    Plat_SetGameDirectories
-    Plat_SetGlobalSafeAreaInsets
+    Plat_SetGameDirectory
     Plat_SetIsConsoleApplication
     Plat_SetModuleFilename
-    Plat_SetMouseCapture
     Plat_SetVirtualReserveFailLimit
     Plat_SetVirtualReserveWarnLimit
     Plat_SetWatchdogHandlerFunction
@@ -1974,17 +1996,19 @@ EXPORTS
     RandomizeBits
     RegisterAssertionFailureListener
     RegisterGlobalObject
-    RegisterMobileEventListener
+    RegisterQuantizedFloatEncoderAliasTuning
     RegisterStringToken
     ReleaseThreadHandle
     RemoveAssertionCallback
     ReportProgress
+    ResetQuantizedFloatEncoderAliasOverrides
     RestartSelfFromAlternateLocation
     RestartSelf_FixTaskbarPinShortcut
     RestartSelf_ShowGenericRestartErrorForBadShortcut
     RestartSelf_TestIfInternalArg
     RestoreWin32ConsoleColor
     ReturnJobManualEventToPool
+    RunSync
     RunTSListTests
     RunTSQueueTests
     RunThreadPoolPerFrameTests
@@ -2001,7 +2025,6 @@ EXPORTS
     SetDisableFocusBasedPriorityBoost
     SetThreadedLoadLibraryFunc
     SetWin32ConsoleColor
-    SetupWin32ConsoleIO
     ShouldAllowRestart
     SkipBlanks
     SortCheck_Failure
@@ -2031,6 +2054,7 @@ EXPORTS
     StackTools_InstallModuleMappingListener
     StackTools_RemoveModuleMappingListener
     StackTools_VerifyLoadedModuleMappings
+    Start
     StrReplaceChar
     TestKeyValuesJSONParser
     ThreadCloseProcess
@@ -2046,6 +2070,7 @@ EXPORTS
     ThreadGetProcessPriority
     ThreadInMainThread
     ThreadInPrimaryOrSecondaryMainThread
+    ThreadInSecondaryMainThread
     ThreadInitOnceCall_Finish
     ThreadInitOnceCall_ShouldRun
     ThreadIsProcessActive
@@ -2066,6 +2091,7 @@ EXPORTS
     ThreadShellExecuteEx
     ThreadSleep
     ThreadSpin
+    ThreadStartFuzzer
     ThreadTerminateProcessCode
     ThreadWaitForProcessExit
     ThreadYield
@@ -2093,10 +2119,10 @@ EXPORTS
     UniqueIdFromString
     UniqueIdToString
     UnregisterAssertionFailureListener
-    UnregisterMobileEventListener
     Unserialize
     UploadFilesToAnalyzer
     UploadTracyFile
+    UtlRBTree_FailedInsertDuplicate
     UtlVectorMemory_Alloc
     UtlVectorMemory_AllocAligned
     UtlVectorMemory_CalcNewAllocationCount
@@ -2128,12 +2154,36 @@ EXPORTS
     V_BBCodeToHTML
     V_BasicHtmlEntityEncode
     V_BoyerMooreSearch
+    V_CheckStringToBool
+    V_CheckStringToColor
+    V_CheckStringToFloat32
+    V_CheckStringToFloat32Limit
+    V_CheckStringToFloat64
+    V_CheckStringToFloat64Limit
+    V_CheckStringToInt16
+    V_CheckStringToInt32
+    V_CheckStringToInt64
+    V_CheckStringToInt64Limit
+    V_CheckStringToInt8
+    V_CheckStringToQAngle
+    V_CheckStringToQuaternion
+    V_CheckStringToUint16
+    V_CheckStringToUint32
+    V_CheckStringToUint64
+    V_CheckStringToUint64Limit
+    V_CheckStringToUint8
+    V_CheckStringToVector
+    V_CheckStringToVector2D
+    V_CheckStringToVector4D
+    V_CheckStringToVectorWS
     V_CommonPrefixToUnderscore
     V_CompareNameWithWildcards
     V_CopyMemory3D
     V_CountTextLines
     V_DecodeBackslashSequencesInString
+    V_DoubleToString_NoExponent
     V_DoubleToString_Unsafe
+    V_ExpandScientificNotation
     V_ExtractDomainFromURL
     V_FixDoubleSlashes
     V_FixInvalidFileNameCharacters
@@ -2141,6 +2191,7 @@ EXPORTS
     V_FixSlashes
     V_FixupPathCharToUnderscore
     V_FixupPathSpaceToUnderscore
+    V_FloatToString_NoExponent
     V_FloatToString_Unsafe
     V_GetErrno
     V_GetFileExtension
@@ -2197,6 +2248,7 @@ EXPORTS
     V_PathContainsPath
     V_PathNamesAreEquivalent
     V_PathsMatch
+    V_PrettifyDurationMs
     V_PrettifyFloat
     V_PrettifyMem
     V_PrettifyNum
@@ -2231,6 +2283,7 @@ EXPORTS
     V_StringToVector
     V_StringToVector2D
     V_StringToVector4D
+    V_StringToVectorWS
     V_StripAndPreserveHTML
     V_StripAndPreserveHTMLCore
     V_StripExcessTrailingZeros
@@ -2355,9 +2408,11 @@ EXPORTS
     V_fscanf
     V_fseek
     V_fseeki64
+    V_fstat
     V_ftell
     V_ftelli64
     V_fwrite
+    V_get_osfhandle
     V_hypotd
     V_hypotf
     V_isEntirelyWhitespace
@@ -2370,6 +2425,7 @@ EXPORTS
     V_isinfd
     V_isnand
     V_isstrlower_fast
+    V_isstrupper_fast
     V_isvalidhex
     V_iswalnum
     V_iswalpha
@@ -2435,8 +2491,11 @@ EXPORTS
     V_strspn
     V_strstr32
     V_strtod
+    V_strtof
+    V_strtoi32
     V_strtoi64
     V_strtok
+    V_strtoui32
     V_strtoui64
     V_strupper_fast
     V_swscanf
@@ -2493,9 +2552,13 @@ EXPORTS
     V_wcstoi64
     V_wcstoui64
     VoidFnPtrLookup_Tier0
+    Wait
     Warning
     Win_LoadDbgHelpFromKnownPath
+    Worldsize_ClearSessionMaxCoord
+    Worldsize_GetGameInfoMaxCoordFloat
     Worldsize_Init
+    Worldsize_SetSessionMaxCoord
     _CCallStackStatsGatherer_GetSharedGlobalInstance
     _CCallStackStatsGatherer_Internal_DumpStatsToFile
     _CCallStackStatsGatherer_ReleaseSharedGlobalInstance
@@ -2551,8 +2614,11 @@ EXPORTS
     g_VProfNodeSpikeReporting
     g_VProfSignalSpike
     g_bPlatCPUTicksAreReliable
-    g_bUpdateStringTokenDatabase
     g_flConfigMaxCoord
+    g_flConfigMaxObjectPosition
+    g_flThreadedJobWaitTimeAccumulator
+    g_flToolsDefaultFarZ
+    g_nConfigMaxCoord
     g_pFiberJobPool
     g_pMemAlloc
     g_pScheduledFunctions
