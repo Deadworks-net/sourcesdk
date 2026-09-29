@@ -9,6 +9,7 @@
 #include "tier1/utlvector.h"
 #include "tier1/utldict.h"
 #include "entity2/entitycomponent.h"
+#include "entity2/entityinstance.h"
 #include "entityhandle.h"
 #include "networksystem/iflattenedserializers.h"
 
