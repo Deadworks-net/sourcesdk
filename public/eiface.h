@@ -824,6 +824,10 @@ public:
 	// Called from engine's "exec" command handler. Returns false if commands are disallowed
 	// (triggers "Config %s contains invalid commands" warning). Workshop command sanitization.
 	virtual bool			ValidateScriptCommands( const char *pszCommandText, CBufferString *pFilteredOutput ) = 0;
+
+	// Deadlock: new in 6711; CSource2GameClients returns true and false.
+	virtual bool			unk_44() = 0;
+	virtual bool			unk_45() = 0;
 };
 
 typedef IVEngineServer2 IVEngineServer;
