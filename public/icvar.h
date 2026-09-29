@@ -93,12 +93,12 @@ public:
 	virtual void			ResetConVarsToDefaultValuesByFlag( uint64 nFlag ) = 0;
 
 	virtual void			SetMaxSplitScreenSlots( int nSlots ) = 0;
-	virtual int				GetMaxSplitScreenSlots() const = 0;
+	// Deadlock 2026-09-29: GetMaxSplitScreenSlots() and the unk001() slot after RemoveCreationListeners() are gone
+	// from CCvar (46 virtuals incl. IAppSystem, was 48); everything from ResetConVarsToDefaultValuesByName() on moved up by two.
 
 	virtual void			RegisterCreationListeners( IConVarListener *callbacks ) = 0;
 	virtual void			RemoveCreationListeners( IConVarListener *callbacks ) = 0;
 
-	virtual void			unk001() = 0;
 
 	// Reverts cvars to default values which match pszPrefix string,
 	// ignores FCVAR_COMMANDLINE_ENFORCED

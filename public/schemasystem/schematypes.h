@@ -363,7 +363,9 @@ struct SchemaClassInfoData_t
 	
 	const char* m_pszName;
 	const char* m_pszProjectName;
-	// Deadlock: no m_pszCPPName (CS2-only, upstream f273c4a3). With it m_pFields/m_nFieldCount shift by 8.
+	// Deadlock 2026-09-29: the class descriptor gained this slot (null in the static tables), matching CS2 /
+	// upstream f273c4a3. m_nSize is at +0x20 and m_pFields at +0x30 now; without it every field lookup reads garbage.
+	const char* m_pszCPPName;
 
 	int m_nSize;
 
@@ -398,7 +400,7 @@ struct SchemaClassInfoData_t
 	}
 };
 // Deadlock: verified against the live server (schema field walk in Deadworks).
-COMPILE_TIME_ASSERT( offsetof( SchemaClassInfoData_t, m_pFields ) == 0x28 );
+COMPILE_TIME_ASSERT( offsetof( SchemaClassInfoData_t, m_pFields ) == 0x30 );
 
 class CSchemaClassInfo : public SchemaClassInfoData_t
 {

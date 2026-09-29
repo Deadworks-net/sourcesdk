@@ -34,10 +34,12 @@ public:
 	// clients pointer is a masked uint64 value where (client index - 1) is mapped to each bit.
 	// Providing nClientCount as -1 and clients pointer as NULL would post event to all available clients.
 	// Providing nSize has no effect and is unused.
-	virtual void PostEventAbstract( CSplitScreenSlot nSlot, bool bLocalOnly, int nClientCount, const uint64 *clients,
-		INetworkMessageInternal *pEvent, const CNetMessage *pData, unsigned long nSize, NetChannelBufType_t bufType ) = 0;
+	// Deadlock 2026-09-29: the recipient-filter overload sits before the client-array one in CGameEventSystem
+	// (slots 15 and 16 incl. IAppSystem); the game's own senders call the filter overload through slot 15.
 	virtual void PostEventAbstract( CSplitScreenSlot nSlot, bool bLocalOnly, const IRecipientFilter *pFilter,
 		INetworkMessageInternal *pEvent, const CNetMessage *pData, unsigned long nSize ) = 0;
+	virtual void PostEventAbstract( CSplitScreenSlot nSlot, bool bLocalOnly, int nClientCount, const uint64 *clients,
+		INetworkMessageInternal *pEvent, const CNetMessage *pData, unsigned long nSize, NetChannelBufType_t bufType ) = 0;
 
 	// Posts the event to all clients, even tho the function name tells otherwise
 	// Providing nSize has no effect and is unused.
