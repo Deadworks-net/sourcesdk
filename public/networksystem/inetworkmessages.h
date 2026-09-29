@@ -63,21 +63,14 @@ public:
 
 	virtual void AssociateNetMessageWithChannelCategoryAbstract( INetworkSerializerPB *pNetMessage, NetworkCategoryId nCategoryId, bool bCategoryMaskOverride = false ) = 0;
 
-	// Passing nMessasgeId as -1 would auto-assign the id even if bAutoAssignId is false based on the message name hash.
-	virtual INetworkSerializerPB *FindOrCreateNetMessage( NetworkMessageId nMessageId, const IProtobufBinding *pProtoBinding, uint nMessageSize, INetworkSerializerPB *pGloablNetMessageInternal = nullptr, bool bCreateIfNotFound = true, bool bAutoAssignId = false ) = 0;
-
 	virtual bool SerializeAbstract( bf_write &pBuf, const CNetMessage *pData ) = 0;
 
-	virtual bool UnserializeMessageInternal( bf_read &pBuf, CNetMessage *pData ) = 0;
+	// Deadlock: pError since 6711, which gets the reason parsing failed instead of it being logged
+	virtual bool UnserializeMessageInternal( bf_read &pBuf, CNetMessage *pData, CUtlString *pError = nullptr ) = 0;
 	virtual bool SerializeMessageInternal( bf_write &pBuf, const CNetMessage *pData ) = 0;
 
 	// Returns nullptr if failed to unserialize, reason is written to err_reason
 	virtual CNetMessage *UnserializeFromStream( bf_read &pBuf, CUtlString &strError ) = 0;
-	virtual bool SerializeAbstractInternal( bf_write &pBuf, INetworkSerializerPB *pNetMessage, const CNetMessage *pData ) = 0;
-
-	virtual CNetMessage *AllocateAndCopyConstructNetMessageAbstract( INetworkSerializerPB *pNetMessage, const CNetMessage *pFrom ) = 0;
-
-	virtual void DeallocateNetMessageAbstract( INetworkSerializerPB *pNetMessage, CNetMessage *pData ) = 0;
 
 	virtual void *RegisterNetworkFieldSerializer( const char *, NetworkSerializationMode_t, NetworkableDataType_t, int, NetworkFieldSerializeCB, NetworkFieldUnserializeCB, NetworkFieldInfoCB, 
 		NetworkFieldMetaInfoCB, NetworkableDataCB, NetworkUnkCB001, NetworkFieldSerializeCB, NetworkFieldUnserializeCB ) = 0;
@@ -95,14 +88,16 @@ public:
 	virtual Color GetNetworkGroupColor( NetworkGroupId nGroupId ) = 0;
 
 	virtual void AssociateNetMessageGroupIdWithChannelCategory( NetworkCategoryId nCategoryId, const char *szGroup ) = 0;
-	// Deadlock: still has this slot (CS2 release removed it; upstream 6119e91b). FindNetworkMessageById etc. shift without it.
-	virtual void RegisterSchemaAtomicTypeOverride( uint32 nIdx, CSchemaType *pSchemaType ) = 0;
 
 	virtual void SetNetworkSerializationContextData( const char *szContext, NetworkSerializationMode_t eSerializationMode, NetworkContextData_t *pData ) = 0;
 	virtual struct NetworkContextData_t *GetNetworkSerializationContextData( NetworkContextDataId nContextId, NetworkSerializationMode_t eSerializationMode = NET_SERIALIZATION_MODE_DEFAULT ) = 0;
 
 	virtual void unk101() = 0;
 	virtual void unk102() = 0;
+
+	// Deadlock: moved here in 6711, taking the message's allocator instead of an IProtobufBinding.
+	// Passing nMessageId as -1 would auto-assign the id based on the message name hash.
+	virtual INetworkSerializerPB *FindOrCreateNetMessage( NetworkMessageId nMessageId, NetMessageAllocateFn pfnAllocate, int nSignonGroup, int8 nBufType, bool bIsForServer, bool bNonSerializable = false ) = 0;
 
 	// Doesn't support duplicated callbacks per field
 	virtual void RegisterNetworkFieldChangeCallbackInternal( const char *szFieldName, uint64, NetworkFieldChangedDelegateType_t fieldType, CUtlAbstractDelegate pCallback, NetworkFieldChangeCallbackPerformType_t cbPerformType, int unkflag ) = 0;
@@ -125,6 +120,10 @@ public:
 	virtual int ComputeOrderForPriority( int nPriority ) = 0;
 
 	virtual LoggingChannelID_t GetLoggingChannel() = 0;
+
+	// Deadlock: new in 6711; set and get the same 0x60 bytes
+	virtual void unk201( const void *p ) = 0;
+	virtual void *unk202() = 0;
 
 	virtual ~INetworkMessages() = 0;
 };

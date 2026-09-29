@@ -87,8 +87,8 @@ private:
 // This is mainly to access the game constructed objects, and not for direct initialization of them
 // since this misses the CNetMessage implementation which requires supplying other proto related info like
 // proto binding object, proto msg id/group, etc.
-// So to allocate the message yourself use INetworkMessageInternal::AllocateMessage() or INetworkMessages::AllocateNetMessageAbstract()
-// functions instead of direct initialization (they both are equivalent)!
+// So to allocate the message yourself use INetworkMessageInternal::AllocateMessage() instead of direct initialization,
+// and free it with delete, which goes through the game's deleting destructor!
 // Example usage:
 // auto *msg = INetworkMessageInternal::AllocateMessage()->As<CYourMessage_t>();
 // msg->field1( 2 );
@@ -106,88 +106,16 @@ public:
 	static constexpr NetChannelBufType_t kBufType = BUF_TYPE;
 	static constexpr bool kIsForServer = IS_FOR_SERVER;
 
-	inline static class CProtobufBinding : public IProtobufBinding
+	// Deadlock: since 6711 FindOrCreateNetMessage takes this instead of an IProtobufBinding.
+	static CNetMessage *AllocateMessage()
 	{
-	public:
-		virtual const char *GetName() const
-		{
-			static std::string s_szResult;
+		auto *pNewMsg = Alloc< MyType_t >();
 
-			if ( s_szResult.empty() )
-			{
-				s_szResult += PBType_t().GetTypeName();
-				s_szResult += " [";
-				s_szResult += std::to_string( kMsgId );
-				s_szResult += "]";
-			}
+		if ( !pNewMsg )
+			return nullptr;
 
-			return s_szResult.c_str();
-		}
-
-		virtual int GetSize() const { return sizeof( PBType_t ); }
-
-		virtual const char *ToString( CNetMessage *pData, CUtlString &sResult ) const
-		{
-			auto *pMsgPB = reinterpret_cast< MyType_t * >(pData);
-
-			CBufferStringN<256> sBuffer;
-
-			sBuffer.Format( "%s\n{\n", GetName() );
-
-			auto sPBDebug = pMsgPB->PBType_t::DebugString();
-
-			sBuffer.Append(sPBDebug.c_str(), static_cast<int>(sPBDebug.length()));
-			sBuffer += "}\n";
-
-			sResult = sBuffer;
-
-			return sResult.String();
-		}
-
-		virtual const char *GetGroup() const
-		{
-			if constexpr ( !( 0 <= kSignonGroup && kSignonGroup < ARRAYSIZE(k_pszNetGroupNames) ) )
-				return "Unknown";
-
-			return k_pszNetGroupNames[ kSignonGroup ];
-		}
-
-		virtual Color GetGroupColor() const
-		{
-			if ( !g_pNetworkMessages )
-				return DEFAULT_NETMESSAGE_COLOR;
-
-			static NetworkGroupId s_nPBGroup = -1;
-
-			if ( s_nPBGroup == -1 )
-			{
-				s_nPBGroup = g_pNetworkMessages->FindNetworkGroup( GetGroup() );
-
-				if ( s_nPBGroup == -1 )
-				{
-					return DEFAULT_NETMESSAGE_COLOR;
-				}
-
-				return g_pNetworkMessages->GetNetworkGroupColor( s_nPBGroup );
-			}
-
-			return DEFAULT_NETMESSAGE_COLOR;
-		}
-
-		virtual NetChannelBufType_t GetBufType() const { return kBufType; }
-		virtual CNetMessage *AllocateMessage() const
-		{
-			auto *pNewMsg = Alloc< MyType_t >();
-
-			if ( !pNewMsg )
-				return nullptr;
-
-			return static_cast< CNetMessage * >( Construct( pNewMsg ) );
-		}
-
-		virtual bool OkToRedispatch() const { return kIsForServer; }
-		virtual bool IsParent() const { return false; }
-	} sm_binding;
+		return static_cast< CNetMessage * >( Construct( pNewMsg ) );
+	}
 
 public:
 	CNetMessagePB() : CNetMessage( kBufType ), PBType_t() {}
@@ -206,7 +134,7 @@ public:
 
 		if ( !s_pSerializerPB && g_pNetworkMessages )
 		{
-			s_pSerializerPB = g_pNetworkMessages->FindOrCreateNetMessage( kMsgId, &sm_binding, sizeof( MyType_t ) );
+			s_pSerializerPB = g_pNetworkMessages->FindOrCreateNetMessage( kMsgId, &AllocateMessage, kSignonGroup, kBufType, kIsForServer );
 		}
 
 		return s_pSerializerPB;
@@ -226,7 +154,7 @@ public:
 public:
 	const char *GetName() const { return PBType_t::GetTypeName().c_str(); }
 
-	struct NetMessageInfo_t *GetProtoInfo() const
+	NetMessageInfo_t *GetProtoInfo() const
 	{
 		INetworkSerializerPB *pSerializerPB = GetSerializerPB();
 
@@ -234,16 +162,6 @@ public:
 			return nullptr;
 
 		return pSerializerPB->GetNetMessageInfo();
-	}
-
-	IProtobufBinding *GetProtoBindingInfo() const
-	{
-		NetMessageInfo_t *pPrtobufInfo = GetProtoInfo();
-
-		if ( !pPrtobufInfo )
-			return nullptr;
-
-		return pPrtobufInfo->m_pBinding;
 	}
 };
 

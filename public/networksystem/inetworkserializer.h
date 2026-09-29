@@ -280,45 +280,38 @@ public:
 	int32_t m_nDuplicateCount;
 };
 
-struct NetMessageInfo_t
-{
-	int m_nCategories;
-	IProtobufBinding *m_pBinding;
-	CUtlString m_szGroup;
-	NetworkMessageId m_MessageId;
-	NetworkGroupId m_GroupId;
+typedef CNetMessage *( *NetMessageAllocateFn )();
 
-	// (1 << 0) - FLAG_RELIABLE
-	// (1 << 6) - FLAG_AUTOASSIGNEDID
-	// (1 << 7) - FLAG_UNK001
-	uint8 m_nFlags;
+class INetworkMessageInternal;
+using NetMessageInfo_t = INetworkMessageInternal;
 
-	int m_unk001;
-	int m_unk002;
-	bool m_bOkayToRedispatch;
-};
-
-abstract_class INetworkMessageInternal
+// Deadlock: a plain struct since 6711, allocated by INetworkMessages::FindOrCreateNetMessage.
+class INetworkMessageInternal
 {
 public:
-	virtual ~INetworkMessageInternal() = 0;
+	// Formatted as "<proto type name> [<message id>]"
+	const char *GetUnscopedName() const { return m_sName.Get(); }
+	NetMessageInfo_t *GetNetMessageInfo() { return this; }
+	CNetMessage *AllocateMessage() const { return m_pfnAllocate(); }
 
-	virtual const char *GetUnscopedName() = 0;
-	virtual NetMessageInfo_t *GetNetMessageInfo() = 0;
+	CUtlString m_sName;
+	NetMessageAllocateFn m_pfnAllocate;
+	CUtlString m_szGroup;
+	NetworkMessageId m_MessageId;
+	uint32 m_nCategories;
+	// Categories associated with bCategoryMaskOverride
+	uint32 m_nCategoriesOverride;
+	NetworkGroupId m_GroupId;
 
-	virtual void SetMessageId( NetworkMessageId nMessageId ) = 0;
-
-	virtual void AddCategoryMask( uint32 nMask, bool bOverrideField = false ) = 0;
-
-	virtual void SwitchMode( NetworkValidationMode_t nMode ) = 0;
-
-	virtual CNetMessage *AllocateMessage() = 0;
-
-	// Calls to INetworkMessages::SerializeMessageInternal
-	virtual bool Serialize( bf_write &pBuf, const CNetMessage *pData ) = 0;
-	// Calls to INetworkMessages::UnserializeMessageInternal
-	virtual bool Unserialize( bf_read &pBuf, CNetMessage *pData ) = 0;
+	// Bits 0-4: NetChannelBufType_t, 0x20: can't be serialized (gets an id from a counter),
+	// 0x40: for server, 0x80: registered with group -1
+	uint8 m_nFlags;
 };
+
+// Deadlock: verified against networksystem.dll in 6711.
+COMPILE_TIME_ASSERT( sizeof( INetworkMessageInternal ) == 0x28 );
+COMPILE_TIME_ASSERT( offsetof( INetworkMessageInternal, m_MessageId ) == 0x18 );
+COMPILE_TIME_ASSERT( offsetof( INetworkMessageInternal, m_nFlags ) == 0x25 );
 
 using INetworkSerializerPB = INetworkMessageInternal;
 
