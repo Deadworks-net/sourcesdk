@@ -53,6 +53,8 @@ public:
 
 	virtual INetworkSerializerPB *GetSerializerPB() const = 0;
 	virtual CNetMessage *Clone() const = 0;
+	// Deadlock: since 6711, but without upstream's virtual GetName() after it.
+	virtual NetworkMessageId GetMessageId() const = 0;
 
 	// Helper function to cast up the abstract message to a concrete T message type.
 	// Doesn't do any validity checks itself!
@@ -218,6 +220,8 @@ public:
 
 		return static_cast< CNetMessage * >( pClone );
 	}
+
+	virtual NetworkMessageId GetMessageId() const { return kMsgId; }
 
 public:
 	const char *GetName() const { return PBType_t::GetTypeName().c_str(); }
