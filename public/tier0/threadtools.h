@@ -90,12 +90,10 @@ PLATFORM_INTERFACE bool ReleaseThreadHandle( ThreadHandle_t );
 
 //-----------------------------------------------------------------------------
 
-// Deadlock: tier0 exports these with non-const pointers (?ThreadAtomicNotifyOne@@YAXPEAI@Z);
-// CS2 upstream declares `const uint32 *`, which does not link against Deadlock's tier0.lib.
-PLATFORM_OVERLOAD void ThreadAtomicNotifyOne( uint32 *addr );
-PLATFORM_OVERLOAD void ThreadAtomicNotifyN( uint32 *addr, uint32 n );
-PLATFORM_OVERLOAD void ThreadAtomicNotifyAll( uint32 *addr );
-PLATFORM_OVERLOAD void ThreadAtomicWait( uint32 *addr, uint32 ms ); // Deadlock: ?ThreadAtomicWait@@YAXPEAII@Z (non-volatile)
+PLATFORM_OVERLOAD void ThreadAtomicNotifyOne( const uint32 *addr );
+PLATFORM_OVERLOAD void ThreadAtomicNotifyN( const uint32 *addr, uint32 n );
+PLATFORM_OVERLOAD void ThreadAtomicNotifyAll( const uint32 *addr );
+PLATFORM_OVERLOAD void ThreadAtomicWait( volatile uint32 *addr, uint32 ms );
 
 PLATFORM_INTERFACE void ThreadSleep(unsigned duration = 0);
 PLATFORM_INTERFACE void ThreadNanoSleep(unsigned ns);
