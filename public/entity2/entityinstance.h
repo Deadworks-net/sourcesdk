@@ -98,9 +98,11 @@ public:
 	
 	virtual void unk501() = 0; // No child overrides found
 	virtual bool unk502() = 0; // No child overrides found; base returns false
+	virtual void unk503() = 0; // Deadlock: new in 6711; base is an empty ret
 
 	virtual void ReloadPrivateScripts() = 0;
 	virtual datamap_t* GetDataDescMap() = 0;
+	virtual void unk603() = 0; // Deadlock: new in 6711; base returns 0
 
 	virtual int unk601() = 0; // Default returns 0; CTestPulseIO overrides
 	virtual void unk602() = 0;
