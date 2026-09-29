@@ -144,7 +144,6 @@ Every intentional divergence is marked with a `// Deadlock:` comment at the site
 | `public/iserver.h` | pre-merge `CNetworkGameServerBase` body; `offsetof( m_Clients ) == 0x250` |
 | `public/entity2/entityclass.h` | `m_pUnk_0x58[ 4 ]` on Windows |
 | `public/eiface.h` | `GetEntity2Networkables()` returns a pointer; `GetEntityInfo()` |
-| `public/tier0/strtools.h` | inline `V_StringToVectorWS` (not exported by Deadlock's tier0) |
 | `public/tier1/convar.h` | `m_bIsFunction` on convar callbacks |
 | `entity2/entitykeyvalues.cpp` | `MemAlloc_*` + placement new for `CKV3Arena` / `CEntityKeyValues` |
 | `public/const.h` | Deadlock `SolidFlags_t` bits (`FSOLID_NOT_STANDABLE` 0x1, `FSOLID_USE_TRIGGER_BOUNDS` 0x2, `FSOLID_NOT_SOLID` 0x4), not the Source 1 layout |

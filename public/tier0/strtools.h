@@ -502,9 +502,7 @@ PLATFORM_INTERFACE void V_StringToQAngle(const char *buf, QAngle &out_ang, bool 
 PLATFORM_INTERFACE void V_StringToQuaternion(const char *buf, Quaternion &out_quat, bool *successful = NULL, char **remainder = NULL, uint flags = PARSING_FLAG_NONE, IParsingErrorListener *err_listener = NULL);
 
 // Parses string into a VectorWS structure
-// Deadlock: tier0 does not export V_StringToVectorWS. VectorWS is layout-identical to Vector, so parse as one.
-inline void V_StringToVectorWS(const char *buf, VectorWS &out_vecws, bool *successful = NULL, char **remainder = NULL, uint flags = PARSING_FLAG_NONE, IParsingErrorListener *err_listener = NULL)
-{ V_StringToVector( buf, reinterpret_cast< Vector & >( out_vecws ), successful, remainder, flags, err_listener ); }
+PLATFORM_INTERFACE void V_StringToVectorWS(const char *buf, VectorWS &out_vecws, bool *successful = NULL, char **remainder = NULL, uint flags = PARSING_FLAG_NONE, IParsingErrorListener *err_listener = NULL);
 
 // Parses string as a uint64 value, where if the value exceeds min/max limits (inclusive), the parsing fails and default_value is returned
 PLATFORM_INTERFACE uint64 V_StringToUint64Limit(const char *buf, uint64 min, uint64 max, uint64 default_value, bool *successful = NULL, char **remainder = NULL, uint flags = PARSING_FLAG_NONE, IParsingErrorListener *err_listener = NULL);
