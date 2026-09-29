@@ -138,7 +138,6 @@ Every intentional divergence is marked with a `// Deadlock:` comment at the site
 | --- | --- |
 | `public/entity2/entityinstance.h` | `GetSerializerClassInfo()` at slot 0 (upstream has it; `NetworkStateChanged` must be slot 28) |
 | `public/entity2/entitysystem.h` | `CEventQueue::m_iListCount`; `offsetof( CGameEntitySystem, m_entityListeners ) == 0x20D0` |
-| `public/schemasystem/schematypes.h` | no `SchemaClassInfoData_t::m_pszCPPName`; `offsetof( m_pFields ) == 0x28` |
 | `public/networksystem/inetworkmessages.h` | `RegisterSchemaAtomicTypeOverride` slot (`FindNetworkMessageById` is index 31) |
 | `public/iserver.h` | pre-merge `CNetworkGameServerBase` body; `offsetof( m_Clients ) == 0x250` |
 | `public/entity2/entityclass.h` | `m_pUnk_0x58[ 4 ]` on Windows |
