@@ -134,24 +134,22 @@ struct EventQueuePrioritizedEvent_t
 
 	variant_t m_VariantValue; // variable-type parameter
 
-	void* m_pPulseHelper;
-	KeyValues3 m_KV3;
-	KeyValues3::Data_t m_KV3Data;
+	// Deadlock: replaces m_pPulseHelper, m_KV3 and m_KV3Data since 6711; ~CEntitySystem frees two CUtlVectors in it
+	uint8 m_Unk_0x40[ 0x50 ];
 
 	EventQueuePrioritizedEvent_t *m_pNext;
 	EventQueuePrioritizedEvent_t *m_pPrev;
 };
+COMPILE_TIME_ASSERT( sizeof( EventQueuePrioritizedEvent_t ) == 0xA0 );
 
 class CEventQueue
 {
 public:
 	CAtomicMutex m_Mutex;
 	EventQueuePrioritizedEvent_t m_Events;
-	// Deadlock: still present (upstream dropped it in 6119e91b "Remove CS2_BETA defines").
-	// Without it CGameEntitySystem::m_entityListeners lands 16 bytes early -> AV in AddListenerEntity.
-	int m_iListCount;
 };
-COMPILE_TIME_ASSERT( sizeof( CEventQueue ) == 0x88 );
+// Deadlock: verified against ~CEntitySystem in 6711.
+COMPILE_TIME_ASSERT( sizeof( CEventQueue ) == 0xB0 );
 
 // Entity notifications //
 
@@ -402,8 +400,8 @@ public:
 	IEntity2SaveRestore* m_pEntity2SaveRestore;
 	IEntity2Networkables* m_pEntity2Networkables;
 };
-// Deadlock: verified against the live server (AddListenerEntity via CEntityListener).
-COMPILE_TIME_ASSERT( offsetof( CGameEntitySystem, m_entityListeners ) == 0x20D0 );
+// Deadlock: verified against CGameEntitySystem::OnAddEntity/OnRemoveEntity in 6711.
+COMPILE_TIME_ASSERT( offsetof( CGameEntitySystem, m_entityListeners ) == 0x20F0 );
 
 abstract_class IEntityFindFilter
 {
