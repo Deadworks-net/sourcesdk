@@ -145,6 +145,7 @@ Every intentional divergence is marked with a `// Deadlock:` comment at the site
 | `public/entity2/entityclass.h` | `m_pUnk_0x58[ 4 ]` on Windows |
 | `public/eiface.h` | `GetEntity2Networkables()` returns a pointer; `GetEntityInfo()` |
 | `public/tier1/convar.h` | `m_bIsFunction` on convar callbacks |
+| `public/tier0/keyvalues.h` | `CKeyValues_Data::Internal_SetName` returns `bool` (6711 export) |
 | `entity2/entitykeyvalues.cpp` | `MemAlloc_*` + placement new for `CKV3Arena` / `CEntityKeyValues` |
 | `public/const.h` | Deadlock `SolidFlags_t` bits (`FSOLID_NOT_STANDABLE` 0x1, `FSOLID_USE_TRIGGER_BOUNDS` 0x2, `FSOLID_NOT_SOLID` 0x4), not the Source 1 layout |
 | `public/const.h`, `public/bspflags.h` | `LAYER_INDEX_CONTENTS_VEHICLE_CLIP` / `CONTENTS_VEHICLE_CLIP` at index 25, where upstream has `UNUSED_LAYER3` |
