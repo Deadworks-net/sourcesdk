@@ -335,6 +335,8 @@ public:
 	bool m_bUnknown : 1;							// haven't found where this is used yet
 };
 
+COMPILE_TIME_ASSERT( sizeof( RnQueryShapeAttr_t ) == 0x38 );
+
 struct RnQueryAttr_t : public RnQueryShapeAttr_t
 {
 };
@@ -457,6 +459,11 @@ public:
 	uint8 m_nCollisionGroup;		// one of the registered collision groups
 	uint8 m_nCollisionFunctionMask;	// set of CollisionFunctionMask_t bits
 };
+
+// Deadlock: verified against vphysics2's pair and query filters, which read m_nCollisionGroup at +0x26
+// and m_nCollisionFunctionMask at +0x27, and against CGameTrace::m_ShapeAttributes (+0x50, next field +0x78).
+COMPILE_TIME_ASSERT( sizeof( RnCollisionAttr_t ) == 0x28 );
+COMPILE_TIME_ASSERT( offsetof( RnCollisionAttr_t, m_nCollisionGroup ) == 0x26 );
 
 class CGameTrace
 {
