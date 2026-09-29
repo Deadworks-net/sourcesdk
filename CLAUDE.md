@@ -148,6 +148,7 @@ Every intentional divergence is marked with a `// Deadlock:` comment at the site
 | `public/tier0/strtools.h` | inline `V_StringToVectorWS` (not exported by Deadlock's tier0) |
 | `public/tier1/convar.h` | `m_bIsFunction` on convar callbacks |
 | `entity2/entitykeyvalues.cpp` | `MemAlloc_*` + placement new for `CKV3Arena` / `CEntityKeyValues` |
+| `public/const.h` | Deadlock `SolidFlags_t` bits (`FSOLID_NOT_STANDABLE` 0x1, `FSOLID_USE_TRIGGER_BOUNDS` 0x2, `FSOLID_NOT_SOLID` 0x4), not the Source 1 layout |
 
 `lib/` is **never** taken from upstream. Upstream ships CS2 binaries and, since 2026-07, an ordinal-only `tier0.lib` that mis-resolves against Deadlock's `tier0.dll`. Regenerate after a game update:
 
