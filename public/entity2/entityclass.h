@@ -154,11 +154,6 @@ public:
 
 	EntClassComponentOverride_t* m_pComponentOverrides;
 
-#ifdef _WIN32
-	// Deadlock: four unidentified pointer-sized members at 0x58..0x78 on Windows (upstream CS2 has none here).
-	void *m_pUnk_0x58[ 4 ];
-#endif
-
 	CEntityClassInfo* m_pClassInfo;
 	CEntityClassInfo* m_pBaseClassInfo;
 	CUtlSymbolLarge m_designerName;
@@ -177,14 +172,18 @@ public:
 	
 	FlattenedSerializerDesc_t m_flattenedSerializer;
 
-	CUtlVector<ClassInputInfo_t> m_classInputInfos;
 	CUtlVector<ClassOutputInfo_t> m_classOutputInfos;
-	
+
 	CEntityHandle m_requiredEHandle;
 
 	CEntityClass* m_pNext;
 	CEntityIdentity* m_pFirstEntity;
 	ServerClass* m_pServerClass;
+	int m_nClassIndex;
 };
+
+// Deadlock: verified against CEntity2NetworkClasses::InitEntity2NetworkClasses in 6711.
+COMPILE_TIME_ASSERT( offsetof( CEntityClass, m_pClassInfo ) == 0x58 );
+COMPILE_TIME_ASSERT( offsetof( CEntityClass, m_pServerClass ) == 0x118 );
 
 #endif // ENTITYCLASS_H
