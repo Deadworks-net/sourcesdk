@@ -93,12 +93,10 @@ public:
 	virtual void			ResetConVarsToDefaultValuesByFlag( uint64 nFlag ) = 0;
 
 	virtual void			SetMaxSplitScreenSlots( int nSlots ) = 0;
-	virtual int				GetMaxSplitScreenSlots() const = 0;
+	int						GetMaxSplitScreenSlots() const { return m_MaxSplitScreenSlots; }
 
 	virtual void			RegisterCreationListeners( IConVarListener *callbacks ) = 0;
 	virtual void			RemoveCreationListeners( IConVarListener *callbacks ) = 0;
-
-	virtual void			unk001() = 0;
 
 	// Reverts cvars to default values which match pszPrefix string,
 	// ignores FCVAR_COMMANDLINE_ENFORCED
@@ -148,6 +146,9 @@ public:
 
 	// Queues up value (creates a copy of it) to be set when convar is ready to be edited
 	virtual void				QueueThreadSetValue( ConVarRefAbstract* ref, CSplitScreenSlot nSlot, void* __unk01, CVValue_t* value ) = 0;
+
+private:
+	int m_MaxSplitScreenSlots;
 };
 
 #include "memdbgon.h"
@@ -271,8 +272,6 @@ public:
 	CUtlHashtable<CUtlStringToken, uint16> m_ConCommandHashes;
 	CUtlLinkedList<ConCommandCallbackInfoNode_t, unsigned short, true> m_CallbackInfoList;
 	int m_ConCommandCount;
-
-	int m_SplitScreenSlots;
 
 	CAtomicMutex m_Mutex;
 	characterset_t m_CharacterSet;

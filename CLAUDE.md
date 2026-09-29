@@ -142,7 +142,6 @@ Every intentional divergence is marked with a `// Deadlock:` comment at the site
 | `public/networksystem/inetworkmessages.h` | `RegisterSchemaAtomicTypeOverride` slot (`FindNetworkMessageById` is index 31) |
 | `public/iserver.h` | pre-merge `CNetworkGameServerBase` body; `offsetof( m_Clients ) == 0x250` |
 | `public/entity2/entityclass.h` | `m_pUnk_0x58[ 4 ]` on Windows |
-| `public/icvar.h` | `GetMaxSplitScreenSlots()` virtual + `unk001()` slot |
 | `public/eiface.h` | `GetEntity2Networkables()` returns a pointer; `GetEntityInfo()` |
 | `public/tier0/threadtools.h` | `ThreadAtomic*` take non-`const`, non-`volatile` `uint32 *` (matches Deadlock's exports) |
 | `public/tier0/strtools.h` | inline `V_StringToVectorWS` (not exported by Deadlock's tier0) |
