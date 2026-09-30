@@ -284,9 +284,10 @@ public:
 	INetworkStringTable* m_pLightStyleTable;
 	INetworkStringTable* m_pUserInfoTable;
 	INetworkStringTable* m_pServerStartupTable;
-	char pad416[120];
+	char pad448[104];
 	bf_write m_Signon;
 	CUtlLeanVector<byte> m_SignonBuffer;
+	bool m_bUnk608;
 	CUtlClientVector m_Clients;
 	CCompressedResourceManifest* m_pResourceManifest;
 	char pad648[48];
@@ -322,8 +323,9 @@ public:
 	bool unk1140;
 	bool m_bIsMultiplayer;
 };
-// Deadlock: verified against the live server (GetClientBySlot).
-COMPILE_TIME_ASSERT( offsetof( CNetworkGameServerBase, m_Clients ) == 0x250 );
+// Deadlock: verified against engine2 in 6711.
+COMPILE_TIME_ASSERT( offsetof( CNetworkGameServerBase, m_Signon ) == 0x228 );
+COMPILE_TIME_ASSERT( offsetof( CNetworkGameServerBase, m_Clients ) == 0x268 );
 
 class CNetworkGameServer : public CNetworkGameServerBase {
 public:
