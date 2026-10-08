@@ -66,12 +66,33 @@ struct NetworkChangePointerCallback_t
 	int8 m_unk101;
 };
 
+enum NetworkOverrideType_t
+{
+	MNetworkOverride_Invalid = -1,
+	MNetworkSerializer = 0,
+	MNetworkEncoder,
+	MNetworkChangeCallback,
+	MNetworkChangeTag,
+	MNetworkBitCount,
+	MNetworkUserGroup,
+	MNetworkPriority,
+	MNetworkOutOfPVSUpdates,
+	MNetworkRemoveAll,
+};
+
+enum OOPVSUpdates_t
+{
+	OOPVSUpdates_OptOut = 0,
+	OOPVSUpdates_OptIn,
+	OOPVSUpdates_Default,
+};
+
 struct NetworkOverride_t
 {
 	const char *m_ParentClass;
 	const char *m_FieldName;
-	const char *m_FieldPriority;
-	int m_unk001;
+	const char *m_Value;
+	NetworkOverrideType_t m_Type;
 };
 
 struct VarTypeOverride_t
@@ -134,10 +155,7 @@ public:
 	SchemaCollectionManipulatorFn_t m_CollectionManipulatorFn;
 	CUtlVector<CUtlString> m_NetworkIncludeByUserGroup;
 	CUtlVector<CUtlString> m_NetworkChangeCb;
-
-	int m_unk101;
-	void *m_unk102;
-	void *m_unk103;
+	CUtlVector<CUtlString> m_NetworkChangeTags;
 
 	int m_NetworkBitCount;
 	int m_NetworkEncodeFlags;
@@ -145,8 +163,9 @@ public:
 	float m_NetworkMin;
 	float m_NetworkMax;
 
-	int m_unk201;
-	int8 m_unk202;
+	OOPVSUpdates_t m_NetworkOutOfPVSUpdates;
+	bool m_NetworkBitCountSet;
+	bool m_NetworkVarEmbeddedNotFlattened;
 
 	bool m_NetworkPolymorphic;
 	CUtlString m_pszCodeGenType;
@@ -159,7 +178,7 @@ public:
 	CUtlString m_TypeOverride;
 	CUtlString m_BuiltinUnderlyingType;
 
-	char m_PathExtension[8];
+	char m_ResourceTypeForInfoType[8];
 	int m_FixedArraySize;
 	char m_IsAtomic;
 	char m_IsBuiltIn;
@@ -221,7 +240,7 @@ public:
 	CUtlHash<SerializerFieldLookup_t> m_FieldLookupTable;
 	int m_nTotalFieldEntries;
 
-	CUtlVector<CNetworkSerializerClassInfo> m_ParentClassInfo;
+	CUtlVector<CNetworkSerializerClassInfo *> m_ParentClassInfo;
 	CNetworkSerializerClassInfo *m_ParentClassInfoBuffer;
 	CUtlVector<int> m_ParentClassOffset;
 
@@ -252,6 +271,7 @@ public:
 	bool m_unk201;
 	bool m_unk202;
 	bool m_NetworkStructNotInNetworkUtlVectorEmbedded;
+	bool m_NetworkVarEmbeddedNotFlattened;
 
 	CThreadSpinRWLock m_Mutex;
 };
