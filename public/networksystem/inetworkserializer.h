@@ -300,6 +300,20 @@ public:
 	int32_t m_nDuplicateCount;
 };
 
+// Deadlock: verified against server.dll in 6757 and networksystem.dll in 6762.
+COMPILE_TIME_ASSERT( sizeof( NetworkOverride_t ) == 0x20 );
+COMPILE_TIME_ASSERT( offsetof( NetworkOverride_t, m_Type ) == 0x18 );
+COMPILE_TIME_ASSERT( sizeof( CNetworkSerializerFieldInfo ) == 0x158 );
+COMPILE_TIME_ASSERT( offsetof( CNetworkSerializerFieldInfo, m_nFieldOffset ) == 0x3C );
+COMPILE_TIME_ASSERT( offsetof( CNetworkSerializerFieldInfo, m_NetworkChangeTags ) == 0xD8 );
+COMPILE_TIME_ASSERT( offsetof( CNetworkSerializerFieldInfo, m_NetworkOutOfPVSUpdates ) == 0x104 );
+COMPILE_TIME_ASSERT( offsetof( CNetworkSerializerFieldInfo, m_NetworkPolymorphic ) == 0x10A );
+COMPILE_TIME_ASSERT( offsetof( CNetworkSerializerFieldInfo, m_ResourceTypeForInfoType ) == 0x138 );
+COMPILE_TIME_ASSERT( offsetof( CNetworkSerializerClassInfo, m_ParentClassInfo ) == 0xB0 );
+COMPILE_TIME_ASSERT( offsetof( CNetworkSerializerClassInfo, m_pDatabase ) == 0x1A0 );
+COMPILE_TIME_ASSERT( offsetof( CNetworkSerializerClassInfo, m_NetworkVarEmbeddedNotFlattened ) == 0x1C5 );
+COMPILE_TIME_ASSERT( offsetof( CNetworkSerializerCodeGenDatabase, m_ClassInfos ) == 0x8 );
+
 typedef CNetMessage *( *NetMessageAllocateFn )();
 
 class INetworkMessageInternal;
