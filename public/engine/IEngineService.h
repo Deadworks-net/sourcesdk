@@ -76,7 +76,6 @@ public:
 	virtual int			GetEngineDeviceWidth( void ) const = 0;
 	virtual int			GetEngineDeviceHeight( void ) const = 0;
 	virtual void		GetEngineSwapChainSize( int *pWidth, int *pHeight ) const = 0;
-	virtual bool		unk101( void ) const = 0;
 	virtual bool		IsLoopSwitchQueued( void ) const = 0;
 	virtual bool		IsLoopSwitchRequested( void ) const = 0;
 	virtual bool		unk201( void ) const = 0;
@@ -115,7 +114,7 @@ public:
 	// Same methods as IVEngineServer2 
 	virtual void		SetFrameTimeAmnesty( const char *amnesty, int, float frametime ) = 0;
 	virtual const char *GetFrameTimeAmnesty( bool check_cvar ) = 0;
-	virtual void		unk501() = 0;
+	virtual void		unk501( const char *, uint16 ) = 0;
 #ifdef _LINUX
 	virtual void		UnregisterPrerequisite( IPrerequisite * ) = 0;
 #endif
