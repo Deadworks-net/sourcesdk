@@ -153,7 +153,7 @@ class CUtlMemoryStack
 {
 public:
 	// constructor, destructor
-	CUtlMemoryStack( int nGrowSize = 0, int nInitSize = 0 )	{ m_MemoryStack.Init( MAX_SIZE * sizeof(T), COMMIT_SIZE * sizeof(T), INITIAL_COMMIT * sizeof(T), 4 ); COMPILE_TIME_ASSERT( sizeof(T) % 4 == 0 );	}
+	CUtlMemoryStack( int nGrowSize = 0, int nInitSize = 0 )	{ m_MemoryStack.Init( "CUtlMemoryStack", MAX_SIZE * sizeof(T), COMMIT_SIZE * sizeof(T), INITIAL_COMMIT * sizeof(T), 4 ); COMPILE_TIME_ASSERT( sizeof(T) % 4 == 0 );	}
 	CUtlMemoryStack( T* pMemory, int numElements )			{ Assert( 0 ); 										}
 
 	// Can we use this index?
@@ -200,7 +200,7 @@ public:
 	void Grow( int num = 1 )								{ Assert( num > 0 ); m_nAllocated += num; m_MemoryStack.Alloc( num * sizeof(T) ); }
 
 	// Makes sure we've got at least this much memory
-	void EnsureCapacity( int num )							{ Assert( num <= MAX_SIZE ); if ( m_nAllocated < num ) Grow( num - m_nAllocated ); }
+	void EnsureCapacity( int num )							{ Assert( ( size_t )num <= MAX_SIZE ); if ( m_nAllocated < num ) Grow( num - m_nAllocated ); }
 
 	// Memory deallocation
 	void Purge()											{ m_MemoryStack.Purge(); m_nAllocated = 0; }
