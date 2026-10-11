@@ -142,6 +142,7 @@ Every intentional divergence is marked with a `// Deadlock:` comment at the site
 | `public/networksystem/inetworkserializer.h` | `INetworkMessageInternal` is a plain 0x28 byte struct (6711), not a vtable class |
 | `public/networksystem/netmessage.h` | `CNetMessage::GetMessageId()` without upstream's virtual `GetName()`; `CNetMessagePB::AllocateMessage` instead of `sm_binding` (6711) |
 | `public/iserver.h` | pre-merge `CNetworkGameServerBase` body; `offsetof( m_Clients ) == 0x268`; `GetTickInterval()` at slot 13 of `INetworkGameServer` and after `PrintSpawnGroupStatus()` in `INetworkServerService` (6774) |
+| `public/globalvars_base.h` | `CGlobalVarsBase::interval_per_tick` at 0x54 (6774); upstream's CS2 tail (`m_bIsOncePerFrameAsyncWorkPhase`, `m_nThreadId`) does not apply |
 | `public/inetchannel.h` | no `INetChannel::GetRemoteAddress()` after `ClearBitsToSend()`; `CNetChan` has 88 slots (6774) |
 | `public/eiface.h` | `GetEntity2Networkables()` returns a pointer; `GetEntityInfo()`; `ISource2Server::unk_052()` before `GetLevelsFromSaveFile()` and nothing declared past `GetEntityUniqueHammerID()` (the 39 slots after it are not upstream's); `ISource2ServerConfig::GetTickInterval()`; `ISource2GameEntities` ends at `PrePackEntities()` and `CheckTransmit()` has no `bEnablePVSBits` (6774) |
 | `public/tier1/convar.h` | `m_bIsFunction` on convar callbacks |

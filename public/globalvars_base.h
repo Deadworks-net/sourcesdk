@@ -11,6 +11,8 @@
 #pragma once
 #endif
 
+#include "tier0/platform.h"
+
 enum GlobalVarsUsageWarning_t
 {
 	GV_RENDERTIME_CALLED_DURING_SIMULATION,
@@ -86,9 +88,11 @@ public:
 	float m_flSubtickFraction;
 
 	// Simulation tick interval
+	// Deadlock: still here in 6774, where upstream has m_bIsOncePerFrameAsyncWorkPhase; INetworkGameServer::GetTickInterval returns it
 	float interval_per_tick;
 
 	float unk;
 };
+COMPILE_TIME_ASSERT( offsetof( CGlobalVarsBase, interval_per_tick ) == 0x54 );
 
 #endif // GLOBALVARS_BASE_H
