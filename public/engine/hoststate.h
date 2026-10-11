@@ -38,7 +38,7 @@ struct CHostStateRequest
 	CUtlString m_SaveGame;
 	CUtlString m_Address;
 	CUtlString m_DemoFile;
-	bool m_bLoadMap;
+	bool m_bTimeDemo;
 	CUtlString m_Addons;
 	KeyValues *m_pKV;
 };
@@ -63,6 +63,10 @@ public:
 	virtual void RequestHS_SourceTVRelay(const char *, KeyValues *) = 0;
 	virtual void RequestHS_ReloadLastSaveGame(void) = 0;
 	virtual void RequestHS_RestartSpawnGroups(void) = 0;
+
+	// Empty in the engine implementation.
+	virtual void unk023(void) = 0;
+	virtual void unk024(void) = 0;
 };
 
 class CHostStateMgr : public CTier2AppSystem<IHostStateMgr>, public ISwitchLoopModeStatusNotify
@@ -75,7 +79,7 @@ public:
 	CUtlString m_LoopMode;                            // 0x50
 	KeyValues *m_pConnectKV;                          // 0x58
 	CUtlString m_LoopModeName;                        // 0x60
-	CUtlString m_Address;                             // 0x68
+	KeyValues *m_pSourceTVRelayKV;                    // 0x68
 	CUtlString m_SaveGame;                            // 0x70
 	CUtlString m_LevelName;                           // 0x78
 	CUtlString m_Addons;                              // 0x80
