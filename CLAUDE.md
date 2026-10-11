@@ -136,7 +136,7 @@ Every intentional divergence is marked with a `// Deadlock:` comment at the site
 
 | File | Keep |
 | --- | --- |
-| `public/entity2/entityinstance.h` | `GetSerializerClassInfo()` at slot 0 (upstream has it; `NetworkStateChanged` must be slot 28); `unk503()` before `ReloadPrivateScripts()` and `unk603()` after `GetDataDescMap()` (6711) |
+| `public/entity2/entityinstance.h` | `GetSerializerClassInfo()` at slot 0 (upstream has it; `NetworkStateChanged` must be slot 28); `unk503()` before `ReloadPrivateScripts()` (6711); 48 slots, `Schema_DynamicBinding()` is slot 47 (6774) |
 | `public/entity2/entitysystem.h` | 6711 `EventQueuePrioritizedEvent_t` (0xA0) and `CEventQueue` (0xB0); `offsetof( CGameEntitySystem, m_entityListeners ) == 0x20F0` |
 | `public/networksystem/inetworkmessages.h` | 6711 layout: no allocate/deallocate slots, `FindOrCreateNetMessage` at index 20 taking an allocator, `FindNetworkMessageById` is index 27 |
 | `public/networksystem/inetworkserializer.h` | `INetworkMessageInternal` is a plain 0x28 byte struct (6711), not a vtable class |
