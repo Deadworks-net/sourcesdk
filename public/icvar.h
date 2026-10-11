@@ -102,7 +102,7 @@ public:
 	// ignores FCVAR_COMMANDLINE_ENFORCED
 	virtual void				ResetConVarsToDefaultValuesByName( const char *pszPrefix ) = 0;
 
-	virtual ConVarSnapshot_t	*TakeConVarSnapshot( void ) = 0;
+	virtual ConVarSnapshot_t	*TakeConVarSnapshot( uint64 nFlags ) = 0;
 	virtual void				ResetConVarsToSnapshot( ConVarSnapshot_t *pSnapshot ) = 0;
 	virtual void				DestroyConVarSnapshot( ConVarSnapshot_t *pSnapshot ) = 0;
 
