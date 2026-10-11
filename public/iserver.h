@@ -117,7 +117,7 @@ public:
 	// returns the game time scale (multiplied in conjunction with host_timescale)
 	virtual float	GetTimescale( void ) const = 0; 
 
-	virtual bool	IsSaveRestoreAllowed( void ) const = 0;
+	virtual bool	IsSaveRestoreAllowed( CUtlString *pReason ) const = 0;
 
 	virtual void	SetMapName( const char *pszNewName ) = 0;
 	// current map name (BSP)
@@ -139,6 +139,7 @@ public:
 	virtual void	SynchronouslySpawnGroup( SpawnGroupHandle_t ) = 0;
 
 	virtual void	SetServerState( server_state_t eNewState ) = 0;
+	virtual server_state_t GetServerState( void ) = 0; // return m_State
 	virtual bool	SpawnServer( const char * ) = 0;
 
 	virtual int 	GetSpawnGroupLoadingStatus( SpawnGroupHandle_t ) = 0;
@@ -175,8 +176,8 @@ public:
 	virtual bool	HasReplayDirector() = 0;
 	virtual float	GetAverageFrameTime() = 0;
 
-	virtual void	PreWorldUpdate() = 0;
-	virtual void 	DirectUpdate() = 0;
+	virtual void	PrepareSendClientUpdatesMainThread() = 0;
+	virtual void 	PrepareSendClientUpdatesAsync() = 0;
 
 	virtual CSteamID	GetGameServerSteamID() = 0;
 
