@@ -67,6 +67,10 @@ struct SpawnGroupDesc_t;
 class IClassnameForMapClassCallback;
 struct Entity2Networkable_t;
 class CCreateGameServerLoadInfo;
+enum SaveFileLevelsType_t : int;
+struct SaveGameParams_t;
+enum SaveGameResult_t : int;
+class KeyValues3;
 class INavListener;
 class CNavData;
 struct EconItemInfo_t;
@@ -616,28 +620,33 @@ public:
 	virtual void			PreFatalShutdown( void ) const = 0;
 	virtual void			UpdateWhenNotInGame( float flFrameTime ) = 0;
 
-	virtual void			GetEconItemNamesForModel( const char *pModelName, bool bExcludeItemSets, bool bExcludeIndividualItems, CUtlVector<CUtlString> &econItemNames ) = 0;
-	virtual void			GetEconItemNamesForCharacter( const char *pCharacterName, bool bExcludeItemSets, bool bExcludeIndividualItems, CUtlVector<CUtlString> &econItemNames ) = 0;
-	virtual void			GetEconItemsInfoForModel( const char *pModelName, const char *pEconItemName, bool bExcludeItemSets, bool bExcludeIndividualItems, bool bExcludeStockItemSet, CUtlVector<EconItemInfo_t> &econInfo ) = 0;
-	virtual void			GetEconItemsInfoForCharacter( const char *pCharacterName, const char *pEconItemName, bool bExcludeItemSets, bool bExcludeIndividualItems, bool bExcludeStockItemSet, CUtlVector<EconItemInfo_t> &econInfo ) = 0;
-
-	virtual void			GetDefaultScaleForModel( const char *pModelName, bool bCheckLoadoutScale ) = 0;
-	virtual void			GetDefaultScaleForCharacter( const char *pCharacterName, bool bCheckLoadoutScale ) = 0;
-	virtual void			GetDefaultControlPointAutoUpdates( const char *pParticleSystemName, CUtlVector<EconControlPointInfo_t> &autoUpdates ) = 0;
-
-	virtual void			unk_201() = 0;
-
-	virtual void			GetCharacterNameForModel( const char *pModelName, bool bCheckItemModifiers, CUtlString &characterName ) = 0;
-	virtual void			GetModelNameForCharacter( const char *pCharacterNamel, int nIndex, CBufferString &modelName ) = 0;
-	virtual void			GetCharacterList( CUtlVector<CUtlString> &characterNames ) = 0;
-	virtual void			GetDefaultChoreoDirForModel( const char *pModelName, CBufferString &defaultVCDDir ) = 0;
-
 	virtual void			*GetEconItemSystem( void ) = 0;
 
 	virtual void			ServerConVarChanged( const char *pVarName, const char *pValue ) = 0;
 
 	// Returns a list of values and names corresponding to HitGroup_t enum
 	virtual void			GetHitGroupEnumInfo( CUtlVector<int> &values, CUtlVector<CUtlString> &names ) = 0;
+
+	virtual void			WriteStartupTelemetry( KeyValues3 *pKV ) = 0;
+
+	virtual bool			SaveGame_CalcFileName( const char *pName, CUtlString &output ) const = 0;
+	virtual bool			GetLevelNameFromSaveFile( const char *pSaveGame, CUtlString &levelName ) = 0;
+	// Deadlock: not in upstream
+	virtual bool			unk_052( void ) = 0;
+	virtual void			GetLevelsFromSaveFile( const char *pSaveGame, CUtlVector<CCreateGameServerLoadInfo> &list, bool bWipeDirectoryAndExtract, SaveFileLevelsType_t saveFileLevelsType, CUtlString *pOutHeaderString ) = 0;
+	virtual void			ClearSaveDirectory( void ) = 0;
+	virtual void			PreSaveGameLoaded( const char *pSaveName ) = 0;
+	virtual void			AppendSaveGameResources( CCompressedResourceManifest *pCompressedManifestOut, ILoadingSpawnGroup *pLoadingSpawnGroup, SpawnGroupHandle_t hSpawnGroup, const void *pLoadDesc ) const = 0;
+	virtual void			AppendTransitionResources( CCompressedResourceManifest *pCompressedManifestOut, ILoadingSpawnGroup *pLoadingSpawnGroup, SpawnGroupHandle_t hSpawnGroup, const void *pLoadDesc ) const = 0;
+	virtual SaveGameResult_t SaveGame( const SaveGameParams_t &params ) = 0;
+	virtual bool			IsAsyncSaveInProgress( void ) = 0;
+	virtual bool			ProcessPendingSaveRequest( void ) = 0;
+	virtual bool			HasPendingSaveRequest( void ) = 0;
+	virtual void			FinishAsyncSave( void ) = 0;
+
+	virtual const char		*GetEntityUniqueHammerID( CEntityIndex nEntityIndex ) = 0;
+
+	// Deadlock: CSource2Server has 39 more slots here; they do not line up with upstream's.
 };
 
 //-----------------------------------------------------------------------------
