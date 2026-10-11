@@ -699,6 +699,7 @@ public:
 
 	// Get the simulation interval (must be compiled with identical values into both client and game .dll for MOD!!!)
 	// Right now this is only requested at server startup time so it can't be changed on the fly, etc.
+	// Deadlock: not in upstream
 	virtual float			GetTickInterval( void ) const = 0;
 
 	// Get server maxplayers and lower bound for same
@@ -709,8 +710,6 @@ public:
 
 	// Return # of human slots, -1 if can't determine or don't care (engine will assume it's == maxplayers )
 	virtual int				GetMaxHumanPlayers() = 0;
-
-	virtual bool			ShouldNotifyLocalClientConnectionStateChanges() = 0;
 
 	virtual bool			AllowPlayerToTakeOverBots() = 0;
 
@@ -723,6 +722,21 @@ public:
 	virtual void		GetConVarPrefixesToResetToDefaults( CUtlString &sSemicolonDelimitedPrefixList ) const = 0;
 
 	virtual bool		AllowSaveRestore() = 0;
+
+	virtual bool		ShouldWriteSerializedEntities() = 0;
+
+	virtual bool		IsCommandQueueEnabled() = 0;
+
+	// Returns the cq_dilation_percentage convar.
+	virtual float		GetCommandQueueDilationPercentage() = 0;
+
+	virtual bool		ShouldDedicatedMapCommandChangeLevel() = 0;
+
+	virtual bool		ShouldAllocateNewClientSlots() = 0;
+
+	virtual bool		UseSixtyFourTickInterval() = 0;
+
+	virtual bool		RegisterGameEvents( CreateInterfaceFn factory ) = 0;
 };
 
 #define INTERFACEVERSION_SERVERGAMECLIENTS		"Source2GameClients001"

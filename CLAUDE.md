@@ -141,8 +141,8 @@ Every intentional divergence is marked with a `// Deadlock:` comment at the site
 | `public/networksystem/inetworkmessages.h` | 6711 layout: no allocate/deallocate slots, `FindOrCreateNetMessage` at index 20 taking an allocator, `FindNetworkMessageById` is index 27 |
 | `public/networksystem/inetworkserializer.h` | `INetworkMessageInternal` is a plain 0x28 byte struct (6711), not a vtable class |
 | `public/networksystem/netmessage.h` | `CNetMessage::GetMessageId()` without upstream's virtual `GetName()`; `CNetMessagePB::AllocateMessage` instead of `sm_binding` (6711) |
-| `public/iserver.h` | pre-merge `CNetworkGameServerBase` body; `offsetof( m_Clients ) == 0x250` |
-| `public/eiface.h` | `GetEntity2Networkables()` returns a pointer; `GetEntityInfo()` |
+| `public/iserver.h` | pre-merge `CNetworkGameServerBase` body; `offsetof( m_Clients ) == 0x268`; `GetTickInterval()` at slot 13 of `INetworkGameServer` and after `PrintSpawnGroupStatus()` in `INetworkServerService` (6774) |
+| `public/eiface.h` | `GetEntity2Networkables()` returns a pointer; `GetEntityInfo()`; `ISource2Server::unk_052()` before `GetLevelsFromSaveFile()` and nothing declared past `GetEntityUniqueHammerID()` (the 39 slots after it are not upstream's); `ISource2ServerConfig::GetTickInterval()`; `ISource2GameEntities` ends at `PrePackEntities()` and `CheckTransmit()` has no `bEnablePVSBits` (6774) |
 | `public/tier1/convar.h` | `m_bIsFunction` on convar callbacks |
 | `public/tier0/keyvalues.h` | `CKeyValues_Data::Internal_SetName` returns `bool` (6711 export) |
 | `entity2/entitykeyvalues.cpp` | `MemAlloc_*` + placement new for `CKV3Arena` / `CEntityKeyValues` |
