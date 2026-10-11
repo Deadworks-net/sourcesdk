@@ -1293,6 +1293,10 @@ void KeyValues3::SetValue( T value, KV3TypeEx_t type, KV3SubType_t subtype )
 template < typename T >
 void KeyValues3::NormalizeArray( KV3TypeEx_t type, KV3SubType_t subtype, int size, const T* data, bool bFree )
 {
+	// Normalizing our own typed array: keep its memory alive until the values are copied out.
+	if ( data == m_Data.m_pMemory )
+		m_bFreeArrayMemory = false;
+
 	PrepareForType( KV3_TYPEEX_ARRAY, subtype );
 
 	CKeyValues3Array *pNewArray = m_Data.m_Array.m_pRoot;
