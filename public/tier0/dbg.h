@@ -333,18 +333,20 @@ PLATFORM_INTERFACE bool SetupWin32ConsoleIO();
 // Channels which map the legacy logging system to the new system.
 
 // Channel for all default Msg/Warning/Error commands.
-PLATFORM_INTERFACE LoggingChannelID_t LOG_GENERAL;
+DECLARE_LOGGING_CHANNEL_PLATFORM( LOG_GENERAL );
 
 // Channel for all asserts.
-DECLARE_LOGGING_CHANNEL( LOG_ASSERT );
+DECLARE_LOGGING_CHANNEL_PLATFORM( LOG_ASSERT );
 // Channel for all ConMsg and ConColorMsg commands.
-DECLARE_LOGGING_CHANNEL( LOG_CONSOLE );
+DECLARE_LOGGING_CHANNEL_PLATFORM( LOG_CONSOLE );
 // Channel for all DevMsg and DevWarning commands with level < 2.
-DECLARE_LOGGING_CHANNEL( LOG_DEVELOPER );
+DECLARE_LOGGING_CHANNEL_PLATFORM( LOG_DEVELOPER );
 // Channel for ConDMsg commands.
-DECLARE_LOGGING_CHANNEL( LOG_DEVELOPER_CONSOLE );
+DECLARE_LOGGING_CHANNEL_PLATFORM( LOG_DEVELOPER_CONSOLE );
 // Channel for all DevMsg and DevWarning commands with level >= 2.
-DECLARE_LOGGING_CHANNEL( LOG_DEVELOPER_VERBOSE );
+DECLARE_LOGGING_CHANNEL_PLATFORM( LOG_DEVELOPER_VERBOSE );
+
+DECLARE_LOGGING_CHANNEL_PLATFORM( LOG_SYMBOLS );
 
 // These functions do not return.
 [[noreturn]] void Error( const tchar* pMsg, ... ) FMTFUNCTION( 1, 2 );
