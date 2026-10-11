@@ -1634,9 +1634,11 @@ inline void CKV3ArenaBase::NodeList<NODE>::Clear()
 {
 	if(m_nAllocatedBytes > 0)
 	{
-		for(auto iter = Head(); iter; iter = iter->m_pNext)
+		for ( auto iter = Head(); iter != Tail(); )
 		{
+			auto next = iter->m_pNext;
 			Destruct( &iter->m_Value );
+			iter = next;
 		}
 	}
 
