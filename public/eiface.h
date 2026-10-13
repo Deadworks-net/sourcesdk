@@ -248,6 +248,8 @@ public:
 	virtual bool	IsSpawnGroupLoading( SpawnGroupHandle_t spawnGroup ) const = 0;
 	virtual void	MakeSpawnGroupActive( SpawnGroupHandle_t spawnGroup ) = 0;
 	virtual void	SynchronouslySpawnGroup( SpawnGroupHandle_t spawnGroup ) = 0;
+	// Deadlock: not in upstream
+	virtual bool	unk_065( CPlayerSlot nSlot, int ) = 0;
 	virtual void	SynchronizeAndBlockUntilLoaded( SpawnGroupHandle_t spawnGroup ) = 0;
 
 	virtual void	unk_066( SpawnGroupHandle_t spawnGroup ) = 0;
